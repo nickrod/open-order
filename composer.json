@@ -1,0 +1,22 @@
+{
+    "name": "nickrod/openorder",
+    "description": "Open order library",
+    "keywords": ["orders", "sales", "order tracking"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "nickrod",
+            "email": "nickrod@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "php": "^7.0"
+    },
+    "autoload": {
+        "psr-4": { "openorder\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "openorder\\tests\\": "tests/" }
+    }
+}

@@ -1,45 +1,53 @@
 -- drop views
 
-DROP VIEW IF EXISTS blog_view;
+DROP VIEW IF EXISTS item_view;
 DROP VIEW IF EXISTS gig_view;
 DROP VIEW IF EXISTS service_view;
-DROP VIEW IF EXISTS consultant_short_view;
-DROP VIEW IF EXISTS consultant_view;
-DROP VIEW IF EXISTS item_view;
+DROP VIEW IF EXISTS salesman_short_view;
+DROP VIEW IF EXISTS salesman_view;
+DROP VIEW IF EXISTS sales_item_view;
+DROP VIEW IF EXISTS order_item_view;
 
 -- drop tables
 
-DROP TABLE IF EXISTS consultant_currency;
-DROP TABLE IF EXISTS gig_currency;
-DROP TABLE IF EXISTS service_currency;
+DROP TABLE IF EXISTS store_currency;
 
 --
 
-DROP TABLE IF EXISTS consultant_category;
-DROP TABLE IF EXISTS blog_category;
-DROP TABLE IF EXISTS gig_category;
-DROP TABLE IF EXISTS service_category;
+DROP TABLE IF EXISTS sales_order_sales_item;
 
 --
 
-DROP TABLE IF EXISTS consultant_location;
-DROP TABLE IF EXISTS gig_location;
-DROP TABLE IF EXISTS service_location;
+DROP TABLE IF EXISTS store_account_store;
+DROP TABLE IF EXISTS salesman_store;
 
 --
 
-DROP TABLE IF EXISTS consultant_favorite;
-DROP TABLE IF EXISTS blog_favorite;
-DROP TABLE IF EXISTS gig_favorite;
-DROP TABLE IF EXISTS service_favorite;
+DROP TABLE IF EXISTS salesman_category;
+DROP TABLE IF EXISTS sales_item_category;
+DROP TABLE IF EXISTS sales_order_category;
+DROP TABLE IF EXISTS store_category;
+DROP TABLE IF EXISTS store_account_category;
+
+--
+
+DROP TABLE IF EXISTS salesman_location;
+DROP TABLE IF EXISTS sales_order_location;
+DROP TABLE IF EXISTS store_location;
+
+--
+
+DROP TABLE IF EXISTS sales_item_favorite;
+DROP TABLE IF EXISTS sales_order_favorite;
 
 --
 
 DROP TABLE IF EXISTS total;
-DROP TABLE IF EXISTS consultant_total;
-DROP TABLE IF EXISTS blog_total;
-DROP TABLE IF EXISTS gig_total;
-DROP TABLE IF EXISTS service_total;
+DROP TABLE IF EXISTS salesman_total;
+DROP TABLE IF EXISTS sales_item_total;
+DROP TABLE IF EXISTS sales_order_total;
+DROP TABLE IF EXISTS store_total;
+DROP TABLE IF EXISTS store_account_total;
 DROP TABLE IF EXISTS currency_total;
 DROP TABLE IF EXISTS category_total;
 DROP TABLE IF EXISTS location_total;
@@ -47,19 +55,21 @@ DROP TABLE IF EXISTS account_total;
 
 --
 
-DROP TABLE IF EXISTS blog;
-DROP TABLE IF EXISTS gig;
-DROP TABLE IF EXISTS service;
-DROP TABLE IF EXISTS consultant;
+DROP TABLE IF EXISTS salesman;
+DROP TABLE IF EXISTS sales_order;
+DROP TABLE IF EXISTS store_account;
 
 --
 
 DROP TABLE IF EXISTS currency_price;
 DROP TABLE IF EXISTS currency;
+DROP TABLE IF EXISTS sales_item;
+DROP TABLE IF EXISTS store;
 DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS location;
 DROP TABLE IF EXISTS city;
 DROP TABLE IF EXISTS region;
+DROP TABLE IF EXISTS catalog;
 
 --
 
@@ -89,13 +99,15 @@ CREATE TABLE account (
   email TEXT NOT NULL CHECK(TRIM(email) <> ''),
   nickname TEXT CHECK(TRIM(nickname) <> ''),
   username TEXT NOT NULL CHECK(TRIM(username) <> ''),
+  phone TEXT NOT NULL CHECK(TRIM(phone) <> ''),
   password TEXT NOT NULL CHECK(TRIM(password) <> ''),
   admin BOOL NOT NULL DEFAULT FALSE,
   enabled BOOL NOT NULL DEFAULT TRUE,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(email),
-  UNIQUE(username)
+  UNIQUE(username),
+  UNIQUE(phone)
 );
 
 --
@@ -109,7 +121,6 @@ CREATE INDEX idx_account_updated_date ON account(updated_date);
 
 CREATE TABLE account_active (
   account_id INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
-  chat_online BOOL NOT NULL DEFAULT FALSE,
   site_online BOOL NOT NULL DEFAULT FALSE,
   updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY(account_id)
@@ -117,7 +128,6 @@ CREATE TABLE account_active (
 
 --
 
-CREATE INDEX idx_account_active_chat_online ON account_active(chat_online);
 CREATE INDEX idx_account_active_site_online ON account_active(site_online);
 CREATE INDEX idx_account_active_updated_date ON account_active(updated_date);
 
@@ -206,6 +216,28 @@ CREATE INDEX idx_category_updated_date ON category(updated_date);
 
 --
 
+CREATE TABLE sales_order (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL CHECK(TRIM(title) <> ''),
+  title_url TEXT NOT NULL CHECK(TRIM(title_url) <> ''),
+  page_title TEXT CHECK(TRIM(page_title) <> ''),
+  page_description TEXT CHECK(TRIM(page_description) <> ''),
+  page_header TEXT CHECK(TRIM(page_header) <> ''),
+  featured BOOL NOT NULL DEFAULT FALSE,
+  created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(title),
+  UNIQUE(title_url)
+);
+
+--
+
+CREATE INDEX idx_sales_order_featured ON sales_order(featured);
+CREATE INDEX idx_sales_order_created_date ON sales_order(created_date);
+CREATE INDEX idx_sales_order_updated_date ON sales_order(updated_date);
+
+--
+
 CREATE TABLE region (
   geoname_id INT NOT NULL,
   title TEXT NOT NULL,
@@ -255,7 +287,7 @@ CREATE INDEX idx_location_updated_date ON location(updated_date);
 
 -- item
 
-CREATE TABLE consultant (
+CREATE TABLE salesman (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL CHECK(TRIM(title) <> ''),
   title_short TEXT CHECK(TRIM(title_short) <> ''),
@@ -266,7 +298,6 @@ CREATE TABLE consultant (
   calendar_url TEXT CHECK(TRIM(calendar_url) <> ''),
   image TEXT CHECK(TRIM(image) <> ''),
   image_thumb TEXT CHECK(TRIM(image_thumb) <> ''),
-  rate MONEY DEFAULT 0.00,
   base_currency_id INT DEFAULT 1 REFERENCES currency(id) ON DELETE SET NULL,
   account_id INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
   featured BOOL NOT NULL DEFAULT FALSE,
@@ -276,17 +307,16 @@ CREATE TABLE consultant (
 
 --
 
-CREATE INDEX idx_consultant_title ON consultant(title);
-CREATE INDEX idx_consultant_rate ON consultant(rate);
-CREATE INDEX idx_consultant_base_currency_id ON consultant(base_currency_id);
-CREATE INDEX idx_consultant_account_id ON consultant(account_id);
-CREATE INDEX idx_consultant_featured ON consultant(featured);
-CREATE INDEX idx_consultant_created_date ON consultant(created_date);
-CREATE INDEX idx_consultant_updated_date ON consultant(updated_date);
+CREATE INDEX idx_salesman_title ON salesman(title);
+CREATE INDEX idx_salesman_base_currency_id ON salesman(base_currency_id);
+CREATE INDEX idx_salesman_account_id ON salesman(account_id);
+CREATE INDEX idx_salesman_featured ON salesman(featured);
+CREATE INDEX idx_salesman_created_date ON salesman(created_date);
+CREATE INDEX idx_salesman_updated_date ON salesman(updated_date);
 
 --
 
-CREATE TABLE blog (
+CREATE TABLE sales_item (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL CHECK(TRIM(title) <> ''),
   title_short TEXT CHECK(TRIM(title_short) <> ''),
@@ -295,7 +325,8 @@ CREATE TABLE blog (
   description_short TEXT CHECK(TRIM(description_short) <> ''),
   canonical_url TEXT NOT NULL CHECK(TRIM(canonical_url) <> ''),
   image TEXT CHECK(TRIM(image) <> ''),
-  consultant_id INT NOT NULL REFERENCES consultant(id) ON DELETE CASCADE,
+  base_currency_id INT DEFAULT 1 REFERENCES currency(id) ON DELETE SET NULL,
+  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
   featured BOOL NOT NULL DEFAULT FALSE,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -303,15 +334,15 @@ CREATE TABLE blog (
 
 --
 
-CREATE INDEX idx_blog_title ON blog(title);
-CREATE INDEX idx_blog_consultant_id ON blog(consultant_id);
-CREATE INDEX idx_blog_featured ON blog(featured);
-CREATE INDEX idx_blog_created_date ON blog(created_date);
-CREATE INDEX idx_blog_updated_date ON blog(updated_date);
+CREATE INDEX idx_sales_item_title ON sales_item(title);
+CREATE INDEX idx_sales_item_salesman_id ON sales_item(salesman_id);
+CREATE INDEX idx_sales_item_featured ON sales_item(featured);
+CREATE INDEX idx_sales_item_created_date ON sales_item(created_date);
+CREATE INDEX idx_sales_item_updated_date ON sales_item(updated_date);
 
 --
 
-CREATE TABLE gig (
+CREATE TABLE store_account (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL CHECK(TRIM(title) <> ''),
   title_short TEXT CHECK(TRIM(title_short) <> ''),
@@ -321,7 +352,7 @@ CREATE TABLE gig (
   canonical_url TEXT NOT NULL CHECK(TRIM(canonical_url) <> ''),
   salary MONEY DEFAULT 0.00,
   base_currency_id INT DEFAULT 1 REFERENCES currency(id) ON DELETE SET NULL,
-  consultant_id INT NOT NULL REFERENCES consultant(id) ON DELETE CASCADE,
+  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
   featured BOOL NOT NULL DEFAULT FALSE,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -329,17 +360,17 @@ CREATE TABLE gig (
 
 --
 
-CREATE INDEX idx_gig_title ON gig(title);
-CREATE INDEX idx_gig_salary ON gig(salary);
-CREATE INDEX idx_gig_base_currency_id ON gig(base_currency_id);
-CREATE INDEX idx_gig_consultant_id ON gig(consultant_id);
-CREATE INDEX idx_gig_featured ON gig(featured);
-CREATE INDEX idx_gig_created_date ON gig(created_date);
-CREATE INDEX idx_gig_updated_date ON gig(updated_date);
+CREATE INDEX idx_store_account_title ON store_account(title);
+CREATE INDEX idx_store_account_salary ON gig(salary);
+CREATE INDEX idx_store_account_base_currency_id ON gig(base_currency_id);
+CREATE INDEX idx_store_account_salesman_id ON gig(salesman_id);
+CREATE INDEX idx_store_account_featured ON gig(featured);
+CREATE INDEX idx_store_account_created_date ON gig(created_date);
+CREATE INDEX idx_store_account_updated_date ON gig(updated_date);
 
 --
 
-CREATE TABLE service (
+CREATE TABLE store (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL CHECK(TRIM(title) <> ''),
   title_short TEXT CHECK(TRIM(title_short) <> ''),
@@ -349,7 +380,7 @@ CREATE TABLE service (
   canonical_url TEXT NOT NULL CHECK(TRIM(canonical_url) <> ''),
   price MONEY DEFAULT 0.00,
   base_currency_id INT DEFAULT 1 REFERENCES currency(id) ON DELETE SET NULL,
-  consultant_id INT NOT NULL REFERENCES consultant(id) ON DELETE CASCADE,
+  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
   featured BOOL NOT NULL DEFAULT FALSE,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -360,17 +391,17 @@ CREATE TABLE service (
 CREATE INDEX idx_service_title ON service(title);
 CREATE INDEX idx_service_price ON service(price);
 CREATE INDEX idx_service_base_currency_id ON service(base_currency_id);
-CREATE INDEX idx_service_consultant_id ON service(consultant_id);
+CREATE INDEX idx_service_salesman_id ON service(salesman_id);
 CREATE INDEX idx_service_featured ON service(featured);
 CREATE INDEX idx_service_created_date ON service(created_date);
 CREATE INDEX idx_service_updated_date ON service(updated_date);
 
 -- currency
 
-CREATE TABLE consultant_currency (
-  consultant_id INT NOT NULL REFERENCES consultant(id) ON DELETE CASCADE,
+CREATE TABLE salesman_currency (
+  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
   currency_id INT NOT NULL REFERENCES currency(id) ON DELETE CASCADE,
-  PRIMARY KEY(consultant_id, currency_id)
+  PRIMARY KEY(salesman_id, currency_id)
 );
 
 --
@@ -391,42 +422,42 @@ CREATE TABLE service_currency (
 
 -- category
 
-CREATE TABLE consultant_category (
-  consultant_id INT NOT NULL REFERENCES consultant(id) ON DELETE CASCADE,
+CREATE TABLE salesman_category (
+  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
   category_id INT NOT NULL REFERENCES category(id) ON DELETE CASCADE,
-  PRIMARY KEY(consultant_id, category_id)
+  PRIMARY KEY(salesman_id, category_id)
 );
 
 --
 
-CREATE TABLE blog_category (
-  blog_id INT NOT NULL REFERENCES blog(id) ON DELETE CASCADE,
+CREATE TABLE sales_item_category (
+  sales_item_id INT NOT NULL REFERENCES sales_item(id) ON DELETE CASCADE,
   category_id INT NOT NULL REFERENCES category(id) ON DELETE CASCADE,
-  PRIMARY KEY(blog_id, category_id)
+  PRIMARY KEY(sales_item_id, category_id)
 );
 
 --
 
-CREATE TABLE gig_category (
-  gig_id INT NOT NULL REFERENCES gig(id) ON DELETE CASCADE,
-  category_id INT NOT NULL REFERENCES category(id) ON DELETE CASCADE,
-  PRIMARY KEY(gig_id, category_id)
+CREATE TABLE sales_item_sales_order (
+  sales_item_id INT NOT NULL REFERENCES sales_item(id) ON DELETE CASCADE,
+  sales_order_id INT NOT NULL REFERENCES sales_order(id) ON DELETE CASCADE,
+  PRIMARY KEY(sales_item_id, sales_order_id)
 );
 
 --
 
-CREATE TABLE service_category (
-  service_id INT NOT NULL REFERENCES service(id) ON DELETE CASCADE,
-  category_id INT NOT NULL REFERENCES category(id) ON DELETE CASCADE,
-  PRIMARY KEY(service_id, category_id)
+CREATE TABLE store_account_store (
+  store_account_id INT NOT NULL REFERENCES store_account(id) ON DELETE CASCADE,
+  store_id INT NOT NULL REFERENCES store(id) ON DELETE CASCADE,
+  PRIMARY KEY(store_account_id, store_id)
 );
 
 -- location
 
-CREATE TABLE consultant_location (
-  consultant_id INT NOT NULL REFERENCES consultant(id) ON DELETE CASCADE,
+CREATE TABLE salesman_location (
+  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
   location_id INT NOT NULL REFERENCES location(id) ON DELETE CASCADE,
-  PRIMARY KEY(consultant_id, location_id)
+  PRIMARY KEY(salesman_id, location_id)
 );
 
 --
@@ -447,18 +478,18 @@ CREATE TABLE service_location (
 
 -- favorite
 
-CREATE TABLE consultant_favorite (
-  consultant_id INT NOT NULL REFERENCES consultant(id) ON DELETE CASCADE,
+CREATE TABLE salesman_favorite (
+  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
   account_id INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
-  PRIMARY KEY(consultant_id, account_id)
+  PRIMARY KEY(salesman_id, account_id)
 );
 
 --
 
-CREATE TABLE blog_favorite (
-  blog_id INT NOT NULL REFERENCES blog(id) ON DELETE CASCADE,
+CREATE TABLE sales_item_favorite (
+  sales_item_id INT NOT NULL REFERENCES sales_item(id) ON DELETE CASCADE,
   account_id INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
-  PRIMARY KEY(blog_id, account_id)
+  PRIMARY KEY(sales_item_id, account_id)
 );
 
 --
@@ -486,35 +517,35 @@ CREATE TABLE total (
   total_currencies INT NOT NULL DEFAULT 0,
   total_categories INT NOT NULL DEFAULT 0,
   total_locations INT NOT NULL DEFAULT 0,
-  total_blogs INT NOT NULL DEFAULT 0,
-  total_consultants INT NOT NULL DEFAULT 0,
+  total_items INT NOT NULL DEFAULT 0,
+  total_salesmans INT NOT NULL DEFAULT 0,
   total_gigs INT NOT NULL DEFAULT 0,
   total_services INT NOT NULL DEFAULT 0
 );
 
 --
 
-CREATE TABLE consultant_total (
-  consultant_id INT NOT NULL REFERENCES consultant(id) ON DELETE CASCADE,
+CREATE TABLE salesman_total (
+  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
   total_favorites INT NOT NULL DEFAULT 0,
-  PRIMARY KEY(consultant_id)
+  PRIMARY KEY(salesman_id)
 );
 
 --
 
-CREATE INDEX idx_consultant_total_total_favorites ON consultant_total(total_favorites);
+CREATE INDEX idx_salesman_total_total_favorites ON salesman_total(total_favorites);
 
 --
 
-CREATE TABLE blog_total (
-  blog_id INT NOT NULL REFERENCES blog(id) ON DELETE CASCADE,
+CREATE TABLE item_total (
+  item_id INT NOT NULL REFERENCES item(id) ON DELETE CASCADE,
   total_favorites INT NOT NULL DEFAULT 0,
-  PRIMARY KEY(blog_id)
+  PRIMARY KEY(item_id)
 );
 
 --
 
-CREATE INDEX idx_blog_total_total_favorites ON blog_total(total_favorites);
+CREATE INDEX idx_item_total_total_favorites ON item_total(total_favorites);
 
 --
 
@@ -544,7 +575,7 @@ CREATE INDEX idx_service_total_total_favorites ON service_total(total_favorites)
 
 CREATE TABLE currency_total (
   currency_id INT NOT NULL REFERENCES currency(id) ON DELETE CASCADE,
-  total_consultants INT NOT NULL DEFAULT 0,
+  total_salesmans INT NOT NULL DEFAULT 0,
   total_gigs INT NOT NULL DEFAULT 0,
   total_services INT NOT NULL DEFAULT 0,
   PRIMARY KEY(currency_id)
@@ -552,7 +583,7 @@ CREATE TABLE currency_total (
 
 --
 
-CREATE INDEX idx_currency_total_total_consultants ON currency_total(total_consultants);
+CREATE INDEX idx_currency_total_total_salesmans ON currency_total(total_salesmans);
 CREATE INDEX idx_currency_total_total_gigs ON currency_total(total_gigs);
 CREATE INDEX idx_currency_total_total_services ON currency_total(total_services);
 
@@ -560,8 +591,8 @@ CREATE INDEX idx_currency_total_total_services ON currency_total(total_services)
 
 CREATE TABLE category_total (
   category_id INT NOT NULL REFERENCES category(id) ON DELETE CASCADE,
-  total_blogs INT NOT NULL DEFAULT 0,
-  total_consultants INT NOT NULL DEFAULT 0,
+  total_items INT NOT NULL DEFAULT 0,
+  total_salesmans INT NOT NULL DEFAULT 0,
   total_gigs INT NOT NULL DEFAULT 0,
   total_services INT NOT NULL DEFAULT 0,
   PRIMARY KEY(category_id)
@@ -569,8 +600,8 @@ CREATE TABLE category_total (
 
 --
 
-CREATE INDEX idx_category_total_total_blogs ON category_total(total_blogs);
-CREATE INDEX idx_category_total_total_consultants ON category_total(total_consultants);
+CREATE INDEX idx_category_total_total_items ON category_total(total_items);
+CREATE INDEX idx_category_total_total_salesmans ON category_total(total_salesmans);
 CREATE INDEX idx_category_total_total_gigs ON category_total(total_gigs);
 CREATE INDEX idx_category_total_total_services ON category_total(total_services);
 
@@ -578,7 +609,7 @@ CREATE INDEX idx_category_total_total_services ON category_total(total_services)
 
 CREATE TABLE location_total (
   location_id INT NOT NULL REFERENCES location(id) ON DELETE CASCADE,
-  total_consultants INT NOT NULL DEFAULT 0,
+  total_salesmans INT NOT NULL DEFAULT 0,
   total_gigs INT NOT NULL DEFAULT 0,
   total_services INT NOT NULL DEFAULT 0,
   PRIMARY KEY(location_id)
@@ -586,7 +617,7 @@ CREATE TABLE location_total (
 
 --
 
-CREATE INDEX idx_location_total_total_consultants ON location_total(total_consultants);
+CREATE INDEX idx_location_total_total_salesmans ON location_total(total_salesmans);
 CREATE INDEX idx_location_total_total_gigs ON location_total(total_gigs);
 CREATE INDEX idx_location_total_total_services ON location_total(total_services);
 
@@ -594,11 +625,11 @@ CREATE INDEX idx_location_total_total_services ON location_total(total_services)
 
 CREATE TABLE account_total (
   account_id INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
-  total_blog_favorites INT NOT NULL DEFAULT 0,
-  total_consultant_favorites INT NOT NULL DEFAULT 0,
+  total_item_favorites INT NOT NULL DEFAULT 0,
+  total_salesman_favorites INT NOT NULL DEFAULT 0,
   total_gig_favorites INT NOT NULL DEFAULT 0,
   total_service_favorites INT NOT NULL DEFAULT 0,
-  total_blogs INT NOT NULL DEFAULT 0,
+  total_items INT NOT NULL DEFAULT 0,
   total_gigs INT NOT NULL DEFAULT 0,
   total_services INT NOT NULL DEFAULT 0,
   PRIMARY KEY(account_id)
@@ -606,11 +637,11 @@ CREATE TABLE account_total (
 
 --
 
-CREATE INDEX idx_account_total_total_blog_favorites ON account_total(total_blog_favorites);
-CREATE INDEX idx_account_total_total_consultant_favorites ON account_total(total_consultant_favorites);
+CREATE INDEX idx_account_total_total_item_favorites ON account_total(total_item_favorites);
+CREATE INDEX idx_account_total_total_salesman_favorites ON account_total(total_salesman_favorites);
 CREATE INDEX idx_account_total_total_gig_favorites ON account_total(total_gig_favorites);
 CREATE INDEX idx_account_total_total_service_favorites ON account_total(total_service_favorites);
-CREATE INDEX idx_account_total_total_blogs ON account_total(total_blogs);
+CREATE INDEX idx_account_total_total_items ON account_total(total_items);
 CREATE INDEX idx_account_total_total_gigs ON account_total(total_gigs);
 CREATE INDEX idx_account_total_total_services ON account_total(total_services);
 
@@ -624,27 +655,27 @@ INNER JOIN account_active ON account.id = account_active.account_id;
 
 --
 
-CREATE VIEW consultant_view
+CREATE VIEW salesman_view
 AS
 SELECT *
-FROM consultant
-INNER JOIN item_view ON consultant.account_id = item_view.item_view_id;
+FROM salesman
+INNER JOIN item_view ON salesman.account_id = item_view.item_view_id;
 
 --
 
-CREATE VIEW consultant_short_view
+CREATE VIEW salesman_short_view
 AS
-SELECT consultant.id AS consultant_short_view_id, consultant.title AS consultant_title, consultant.title_url AS consultant_url, image_thumb, username, chat_online
-FROM consultant
-INNER JOIN item_view ON consultant.account_id = item_view.item_view_id;
+SELECT salesman.id AS salesman_short_view_id, salesman.title AS salesman_title, salesman.title_url AS salesman_url, image_thumb, username, chat_online
+FROM salesman
+INNER JOIN item_view ON salesman.account_id = item_view.item_view_id;
 
 --
 
-CREATE VIEW blog_view
+CREATE VIEW item_view
 AS
 SELECT *
-FROM blog
-INNER JOIN consultant_short_view ON blog.consultant_id = consultant_short_view.consultant_short_view_id;
+FROM item
+INNER JOIN salesman_short_view ON item.salesman_id = salesman_short_view.salesman_short_view_id;
 
 --
 
@@ -652,7 +683,7 @@ CREATE VIEW gig_view
 AS
 SELECT *
 FROM gig
-INNER JOIN consultant_short_view ON gig.consultant_id = consultant_short_view.consultant_short_view_id;
+INNER JOIN salesman_short_view ON gig.salesman_id = salesman_short_view.salesman_short_view_id;
 
 --
 
@@ -660,4 +691,4 @@ CREATE VIEW service_view
 AS
 SELECT *
 FROM service
-INNER JOIN consultant_short_view ON service.consultant_id = consultant_short_view.consultant_short_view_id;
+INNER JOIN salesman_short_view ON service.salesman_id = salesman_short_view.salesman_short_view_id;
