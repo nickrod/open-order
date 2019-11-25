@@ -32,8 +32,6 @@ DROP TABLE IF EXISTS store_account_category;
 --
 
 DROP TABLE IF EXISTS salesman_location;
-DROP TABLE IF EXISTS sales_order_location;
-DROP TABLE IF EXISTS store_location;
 
 --
 
@@ -48,6 +46,7 @@ DROP TABLE IF EXISTS sales_item_total;
 DROP TABLE IF EXISTS sales_order_total;
 DROP TABLE IF EXISTS store_total;
 DROP TABLE IF EXISTS store_account_total;
+DROP TABLE IF EXISTS check_in_total;
 DROP TABLE IF EXISTS currency_total;
 DROP TABLE IF EXISTS category_total;
 DROP TABLE IF EXISTS location_total;
@@ -58,6 +57,7 @@ DROP TABLE IF EXISTS account_total;
 DROP TABLE IF EXISTS salesman;
 DROP TABLE IF EXISTS sales_order;
 DROP TABLE IF EXISTS store_account;
+DROP TABLE IF EXISTS check_in;
 
 --
 
@@ -96,6 +96,7 @@ CREATE INDEX idx_admin_registration_enabled ON admin(registration_enabled);
 
 CREATE TABLE account (
   id SERIAL PRIMARY KEY,
+  employee_id INT,
   email TEXT NOT NULL CHECK(TRIM(email) <> ''),
   nickname TEXT CHECK(TRIM(nickname) <> ''),
   username TEXT NOT NULL CHECK(TRIM(username) <> ''),
@@ -105,6 +106,7 @@ CREATE TABLE account (
   enabled BOOL NOT NULL DEFAULT TRUE,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(employee_id),
   UNIQUE(email),
   UNIQUE(username),
   UNIQUE(phone)
@@ -121,15 +123,13 @@ CREATE INDEX idx_account_updated_date ON account(updated_date);
 
 CREATE TABLE account_active (
   account_id INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
-  site_online BOOL NOT NULL DEFAULT FALSE,
-  updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY(account_id)
 );
 
 --
 
-CREATE INDEX idx_account_active_site_online ON account_active(site_online);
-CREATE INDEX idx_account_active_updated_date ON account_active(updated_date);
+CREATE INDEX idx_account_active_created_date ON account_active(created_date);
 
 --
 
@@ -223,7 +223,10 @@ CREATE TABLE sales_order (
   page_title TEXT CHECK(TRIM(page_title) <> ''),
   page_description TEXT CHECK(TRIM(page_description) <> ''),
   page_header TEXT CHECK(TRIM(page_header) <> ''),
-  featured BOOL NOT NULL DEFAULT FALSE,
+  base_currency_id INT DEFAULT 1 REFERENCES currency(id) ON DELETE SET NULL,
+  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE SET NULL,
+  latitude DECIMAL(7,5),
+  longitude DECIMAL(8,5),
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(title),
@@ -232,9 +235,34 @@ CREATE TABLE sales_order (
 
 --
 
-CREATE INDEX idx_sales_order_featured ON sales_order(featured);
+CREATE INDEX idx_sales_order_latitude ON sales_order(latitude);
+CREATE INDEX idx_sales_order_longitude ON sales_order(longitude);
 CREATE INDEX idx_sales_order_created_date ON sales_order(created_date);
 CREATE INDEX idx_sales_order_updated_date ON sales_order(updated_date);
+
+--
+
+CREATE TABLE catalog (
+  item_id INT NOT NULL,
+  title TEXT,
+  title_short TEXT,
+  description TEXT,
+  description_short TEXT,
+  image_url TEXT,
+  upc INT,
+  price MONEY,
+  retail_price MONEY,
+  pack_size TEXT,
+  case_weight TEXT,
+  case_volume TEXT,
+  units INT,
+  pallet_tie_height TEXT,
+  category TEXT,
+  unit_dimensions TEXT,
+  case_dimensions TEXT,
+  UNIQUE(upc),
+  PRIMARY KEY(item_id)
+);
 
 --
 
@@ -265,25 +293,16 @@ CREATE TABLE city (
 
 CREATE TABLE location (
   id SERIAL PRIMARY KEY,
-  geoname_id INT NOT NULL REFERENCES city(geoname_id) ON DELETE CASCADE DEFERRABLE,
-  title TEXT NOT NULL CHECK(TRIM(title) <> ''),
-  title_url TEXT NOT NULL CHECK(TRIM(title_url) <> ''),
-  page_title TEXT CHECK(TRIM(page_title) <> ''),
-  page_description TEXT CHECK(TRIM(page_description) <> ''),
-  page_header TEXT CHECK(TRIM(page_header) <> ''),
-  featured BOOL NOT NULL DEFAULT FALSE,
-  created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(geoname_id),
-  UNIQUE(title_url)
+  latitude DECIMAL(7,5),
+  longitude DECIMAL(8,5),
+  created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 --
 
-CREATE INDEX idx_location_title ON location(title);
-CREATE INDEX idx_location_featured ON location(featured);
+CREATE INDEX idx_location_latitude ON location(latitude);
+CREATE INDEX idx_location_longitude ON location(longitude);
 CREATE INDEX idx_location_created_date ON location(created_date);
-CREATE INDEX idx_location_updated_date ON location(updated_date);
 
 -- item
 
@@ -294,8 +313,6 @@ CREATE TABLE salesman (
   title_url TEXT NOT NULL CHECK(TRIM(title_url) <> ''),
   description TEXT NOT NULL CHECK(TRIM(description) <> ''),
   description_short TEXT CHECK(TRIM(description_short) <> ''),
-  website_url TEXT CHECK(TRIM(website_url) <> ''),
-  calendar_url TEXT CHECK(TRIM(calendar_url) <> ''),
   image TEXT CHECK(TRIM(image) <> ''),
   image_thumb TEXT CHECK(TRIM(image_thumb) <> ''),
   base_currency_id INT DEFAULT 1 REFERENCES currency(id) ON DELETE SET NULL,
@@ -318,6 +335,7 @@ CREATE INDEX idx_salesman_updated_date ON salesman(updated_date);
 
 CREATE TABLE sales_item (
   id SERIAL PRIMARY KEY,
+  item_id INT,
   title TEXT NOT NULL CHECK(TRIM(title) <> ''),
   title_short TEXT CHECK(TRIM(title_short) <> ''),
   title_url TEXT NOT NULL CHECK(TRIM(title_url) <> ''),
@@ -329,12 +347,14 @@ CREATE TABLE sales_item (
   salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
   featured BOOL NOT NULL DEFAULT FALSE,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(item_id)
 );
 
 --
 
 CREATE INDEX idx_sales_item_title ON sales_item(title);
+CREATE INDEX idx_sales_item_base_currency_id ON sales_item(base_currency_id);
 CREATE INDEX idx_sales_item_salesman_id ON sales_item(salesman_id);
 CREATE INDEX idx_sales_item_featured ON sales_item(featured);
 CREATE INDEX idx_sales_item_created_date ON sales_item(created_date);
@@ -344,18 +364,17 @@ CREATE INDEX idx_sales_item_updated_date ON sales_item(updated_date);
 
 CREATE TABLE store_account (
   id SERIAL PRIMARY KEY,
+  account_id INT,
   title TEXT NOT NULL CHECK(TRIM(title) <> ''),
   title_short TEXT CHECK(TRIM(title_short) <> ''),
   title_url TEXT NOT NULL CHECK(TRIM(title_url) <> ''),
   description TEXT NOT NULL CHECK(TRIM(description) <> ''),
   description_short TEXT CHECK(TRIM(description_short) <> ''),
   canonical_url TEXT NOT NULL CHECK(TRIM(canonical_url) <> ''),
-  salary MONEY DEFAULT 0.00,
-  base_currency_id INT DEFAULT 1 REFERENCES currency(id) ON DELETE SET NULL,
-  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
   featured BOOL NOT NULL DEFAULT FALSE,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(account_id)
 );
 
 --
@@ -370,11 +389,33 @@ CREATE INDEX idx_store_account_updated_date ON gig(updated_date);
 
 --
 
+CREATE TABLE check_in (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL CHECK(TRIM(title) <> ''),
+  description TEXT NOT NULL CHECK(TRIM(description) <> ''),
+  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
+  created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+--
+
+CREATE INDEX idx_check_in_title ON check_in(title);
+CREATE INDEX idx_check_in_description ON check_in(description);
+CREATE INDEX idx_check_in_salesman_id ON check_in(salesman_id);
+CREATE INDEX idx_check_in_created_date ON check_in(created_date);
+CREATE INDEX idx_check_in_updated_date ON check_in(updated_date);
+
+--
+
 CREATE TABLE store (
   id SERIAL PRIMARY KEY,
+  store_id INT,
   title TEXT NOT NULL CHECK(TRIM(title) <> ''),
   title_short TEXT CHECK(TRIM(title_short) <> ''),
   title_url TEXT NOT NULL CHECK(TRIM(title_url) <> ''),
+  latitude DECIMAL(7,5),
+  longitude DECIMAL(8,5),
   description TEXT NOT NULL CHECK(TRIM(description) <> ''),
   description_short TEXT CHECK(TRIM(description_short) <> ''),
   canonical_url TEXT NOT NULL CHECK(TRIM(canonical_url) <> ''),
@@ -383,41 +424,36 @@ CREATE TABLE store (
   salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
   featured BOOL NOT NULL DEFAULT FALSE,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(store_id)
 );
 
 --
 
-CREATE INDEX idx_service_title ON service(title);
-CREATE INDEX idx_service_price ON service(price);
-CREATE INDEX idx_service_base_currency_id ON service(base_currency_id);
-CREATE INDEX idx_service_salesman_id ON service(salesman_id);
-CREATE INDEX idx_service_featured ON service(featured);
-CREATE INDEX idx_service_created_date ON service(created_date);
-CREATE INDEX idx_service_updated_date ON service(updated_date);
+CREATE INDEX idx_store_latitude ON store(latitude);
+CREATE INDEX idx_store_longitude ON store(longitude);
+CREATE INDEX idx_store_title ON store(title);
+CREATE INDEX idx_store_price ON store(price);
+CREATE INDEX idx_store_base_currency_id ON store(base_currency_id);
+CREATE INDEX idx_store_salesman_id ON store(salesman_id);
+CREATE INDEX idx_store_featured ON store(featured);
+CREATE INDEX idx_store_created_date ON store(created_date);
+CREATE INDEX idx_store_updated_date ON store(updated_date);
 
 -- currency
 
-CREATE TABLE salesman_currency (
-  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
+CREATE TABLE store_currency (
+  store_id INT NOT NULL REFERENCES store(id) ON DELETE CASCADE,
   currency_id INT NOT NULL REFERENCES currency(id) ON DELETE CASCADE,
-  PRIMARY KEY(salesman_id, currency_id)
+  PRIMARY KEY(store_id, currency_id)
 );
 
---
+-- item
 
-CREATE TABLE gig_currency (
-  gig_id INT NOT NULL REFERENCES gig(id) ON DELETE CASCADE,
-  currency_id INT NOT NULL REFERENCES currency(id) ON DELETE CASCADE,
-  PRIMARY KEY(gig_id, currency_id)
-);
-
---
-
-CREATE TABLE service_currency (
-  service_id INT NOT NULL REFERENCES service(id) ON DELETE CASCADE,
-  currency_id INT NOT NULL REFERENCES currency(id) ON DELETE CASCADE,
-  PRIMARY KEY(service_id, currency_id)
+CREATE TABLE sales_order_sales_item (
+  sales_order_id INT NOT NULL REFERENCES sales_order(id) ON DELETE CASCADE,
+  sales_item_id INT NOT NULL REFERENCES sales_item(id) ON DELETE CASCADE,
+  PRIMARY KEY(sales_order_id, sales_item_id)
 );
 
 -- category
@@ -438,18 +474,50 @@ CREATE TABLE sales_item_category (
 
 --
 
+CREATE TABLE sales_order_category (
+  sales_order_id INT NOT NULL REFERENCES sales_order(id) ON DELETE CASCADE,
+  category_id INT NOT NULL REFERENCES category(id) ON DELETE CASCADE,
+  PRIMARY KEY(sales_order_id, category_id)
+);
+
+--
+
+CREATE TABLE store_category (
+  store_id INT NOT NULL REFERENCES store(id) ON DELETE CASCADE,
+  category_id INT NOT NULL REFERENCES category(id) ON DELETE CASCADE,
+  PRIMARY KEY(store_id, category_id)
+);
+
+--
+
+CREATE TABLE store_account_category (
+  store_account_id INT NOT NULL REFERENCES store_account(id) ON DELETE CASCADE,
+  category_id INT NOT NULL REFERENCES category(id) ON DELETE CASCADE,
+  PRIMARY KEY(store_account_id, category_id)
+);
+
+-- item
+
 CREATE TABLE sales_item_sales_order (
   sales_item_id INT NOT NULL REFERENCES sales_item(id) ON DELETE CASCADE,
   sales_order_id INT NOT NULL REFERENCES sales_order(id) ON DELETE CASCADE,
   PRIMARY KEY(sales_item_id, sales_order_id)
 );
 
---
+-- store
 
 CREATE TABLE store_account_store (
   store_account_id INT NOT NULL REFERENCES store_account(id) ON DELETE CASCADE,
   store_id INT NOT NULL REFERENCES store(id) ON DELETE CASCADE,
   PRIMARY KEY(store_account_id, store_id)
+);
+
+--
+
+CREATE TABLE salesman_store (
+  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
+  store_id INT NOT NULL REFERENCES store(id) ON DELETE CASCADE,
+  PRIMARY KEY(salesman_id, store_id)
 );
 
 -- location
@@ -460,31 +528,7 @@ CREATE TABLE salesman_location (
   PRIMARY KEY(salesman_id, location_id)
 );
 
---
-
-CREATE TABLE gig_location (
-  gig_id INT NOT NULL REFERENCES gig(id) ON DELETE CASCADE,
-  location_id INT NOT NULL REFERENCES location(id) ON DELETE CASCADE,
-  PRIMARY KEY(gig_id, location_id)
-);
-
---
-
-CREATE TABLE service_location (
-  service_id INT NOT NULL REFERENCES service(id) ON DELETE CASCADE,
-  location_id INT NOT NULL REFERENCES location(id) ON DELETE CASCADE,
-  PRIMARY KEY(service_id, location_id)
-);
-
 -- favorite
-
-CREATE TABLE salesman_favorite (
-  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
-  account_id INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
-  PRIMARY KEY(salesman_id, account_id)
-);
-
---
 
 CREATE TABLE sales_item_favorite (
   sales_item_id INT NOT NULL REFERENCES sales_item(id) ON DELETE CASCADE,
@@ -494,18 +538,10 @@ CREATE TABLE sales_item_favorite (
 
 --
 
-CREATE TABLE gig_favorite (
-  gig_id INT NOT NULL REFERENCES gig(id) ON DELETE CASCADE,
+CREATE TABLE sales_order_favorite (
+  sales_order_id INT NOT NULL REFERENCES sales_order(id) ON DELETE CASCADE,
   account_id INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
-  PRIMARY KEY(gig_id, account_id)
-);
-
---
-
-CREATE TABLE service_favorite (
-  service_id INT NOT NULL REFERENCES service(id) ON DELETE CASCADE,
-  account_id INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
-  PRIMARY KEY(service_id, account_id)
+  PRIMARY KEY(sales_order_id, account_id)
 );
 
 -- total
@@ -517,10 +553,8 @@ CREATE TABLE total (
   total_currencies INT NOT NULL DEFAULT 0,
   total_categories INT NOT NULL DEFAULT 0,
   total_locations INT NOT NULL DEFAULT 0,
-  total_items INT NOT NULL DEFAULT 0,
-  total_salesmans INT NOT NULL DEFAULT 0,
-  total_gigs INT NOT NULL DEFAULT 0,
-  total_services INT NOT NULL DEFAULT 0
+  total_sales_items INT NOT NULL DEFAULT 0,
+  total_salesmans INT NOT NULL DEFAULT 0
 );
 
 --
