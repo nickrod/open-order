@@ -338,10 +338,8 @@ CREATE TABLE sales_item (
   item_id INT,
   title TEXT NOT NULL CHECK(TRIM(title) <> ''),
   title_short TEXT CHECK(TRIM(title_short) <> ''),
-  title_url TEXT NOT NULL CHECK(TRIM(title_url) <> ''),
   description TEXT NOT NULL CHECK(TRIM(description) <> ''),
   description_short TEXT CHECK(TRIM(description_short) <> ''),
-  canonical_url TEXT NOT NULL CHECK(TRIM(canonical_url) <> ''),
   image TEXT CHECK(TRIM(image) <> ''),
   base_currency_id INT DEFAULT 1 REFERENCES currency(id) ON DELETE SET NULL,
   salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
@@ -367,10 +365,8 @@ CREATE TABLE store_account (
   account_id INT,
   title TEXT NOT NULL CHECK(TRIM(title) <> ''),
   title_short TEXT CHECK(TRIM(title_short) <> ''),
-  title_url TEXT NOT NULL CHECK(TRIM(title_url) <> ''),
   description TEXT NOT NULL CHECK(TRIM(description) <> ''),
   description_short TEXT CHECK(TRIM(description_short) <> ''),
-  canonical_url TEXT NOT NULL CHECK(TRIM(canonical_url) <> ''),
   featured BOOL NOT NULL DEFAULT FALSE,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -380,12 +376,9 @@ CREATE TABLE store_account (
 --
 
 CREATE INDEX idx_store_account_title ON store_account(title);
-CREATE INDEX idx_store_account_salary ON gig(salary);
-CREATE INDEX idx_store_account_base_currency_id ON gig(base_currency_id);
-CREATE INDEX idx_store_account_salesman_id ON gig(salesman_id);
-CREATE INDEX idx_store_account_featured ON gig(featured);
-CREATE INDEX idx_store_account_created_date ON gig(created_date);
-CREATE INDEX idx_store_account_updated_date ON gig(updated_date);
+CREATE INDEX idx_store_account_featured ON store_account(featured);
+CREATE INDEX idx_store_account_created_date ON store_account(created_date);
+CREATE INDEX idx_store_account_updated_date ON store_account(updated_date);
 
 --
 
@@ -413,13 +406,10 @@ CREATE TABLE store (
   store_id INT,
   title TEXT NOT NULL CHECK(TRIM(title) <> ''),
   title_short TEXT CHECK(TRIM(title_short) <> ''),
-  title_url TEXT NOT NULL CHECK(TRIM(title_url) <> ''),
-  latitude DECIMAL(7,5),
-  longitude DECIMAL(8,5),
   description TEXT NOT NULL CHECK(TRIM(description) <> ''),
   description_short TEXT CHECK(TRIM(description_short) <> ''),
-  canonical_url TEXT NOT NULL CHECK(TRIM(canonical_url) <> ''),
-  price MONEY DEFAULT 0.00,
+  latitude DECIMAL(7,5),
+  longitude DECIMAL(8,5),
   base_currency_id INT DEFAULT 1 REFERENCES currency(id) ON DELETE SET NULL,
   salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
   featured BOOL NOT NULL DEFAULT FALSE,
