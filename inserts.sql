@@ -5,7 +5,13 @@ INSERT INTO total (id) VALUES (1);
 
 -- currency
 
+-- the first will be the default currency, change as needed
+
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('United States Dollar', 'united-states-dollar', 'usd', '&#36;');
+
+-- uncomment if changing default currency
+
+-- INSERT INTO currency (title, title_url, code, symbol) VALUES ('United States Dollar', 'united-states-dollar', 'usd', '&#36;');
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('Australia Dollar', 'australia-dollar', 'aud', '&#36;');
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('Bulgaria Lev', 'bulgaria-lev', 'bgn', '&#1083;&#1074;');
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('Brazil Real', 'brazil-real', 'brl', '&#82;&#36;');
