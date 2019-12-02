@@ -15,10 +15,10 @@ DROP TABLE IF EXISTS store_currency;
 --
 
 DROP TABLE IF EXISTS sales_order_sales_item;
+DROP TABLE IF EXISTS store_sales_item;
 
 --
 
-DROP TABLE IF EXISTS store_account_store;
 DROP TABLE IF EXISTS user_account_store;
 
 --
@@ -220,6 +220,8 @@ CREATE TABLE sales_order (
   store_id INT NOT NULL REFERENCES store(id) ON DELETE CASCADE,
   latitude DECIMAL(7,5),
   longitude DECIMAL(8,5),
+  subtotal MONEY DEFAULT 0.00,
+  total MONEY DEFAULT 0.00,
   enabled BOOL NOT NULL DEFAULT FALSE,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -232,6 +234,8 @@ CREATE INDEX idx_sales_order_user_account_id ON sales_order(user_account_id);
 CREATE INDEX idx_sales_order_store_id ON sales_order(store_id);
 CREATE INDEX idx_sales_order_latitude ON sales_order(latitude);
 CREATE INDEX idx_sales_order_longitude ON sales_order(longitude);
+CREATE INDEX idx_sales_order_subtotal ON sales_order(subtotal);
+CREATE INDEX idx_sales_order_total ON sales_order(total);
 CREATE INDEX idx_sales_order_enabled ON sales_order(enabled);
 CREATE INDEX idx_sales_order_created_date ON sales_order(created_date);
 CREATE INDEX idx_sales_order_updated_date ON sales_order(updated_date);
@@ -243,11 +247,12 @@ CREATE TABLE catalog (
   title TEXT,
   title_short TEXT,
   description TEXT,
-  description_short TEXT,
   image_url TEXT,
   upc INT,
-  price MONEY,
-  retail_price MONEY,
+  retail_case_price MONEY,
+  retail_unit_price MONEY,
+  cost_case_price MONEY,
+  cost_unit_price MONEY,
   pack_size TEXT,
   case_weight TEXT,
   case_volume TEXT,
@@ -306,11 +311,15 @@ CREATE TABLE sales_item (
   id SERIAL PRIMARY KEY,
   item_id INT,
   title TEXT NOT NULL CHECK(TRIM(title) <> ''),
+  title_short TEXT NOT NULL CHECK(TRIM(title_short) <> ''),
   description TEXT NOT NULL CHECK(TRIM(description) <> ''),
   image TEXT CHECK(TRIM(image) <> ''),
-  price MONEY DEFAULT 0.00,
-  cost MONEY DEFAULT 0.00,
-  stock INT NOT NULL DEFAULT 0,
+  retail_case_price MONEY DEFAULT 0.00,
+  retail_unit_price MONEY DEFAULT 0.00,
+  cost_case_price MONEY DEFAULT 0.00,
+  cost_unit_price MONEY DEFAULT 0.00,
+  case_quantity INT NOT NULL DEFAULT 0,
+  unit_quantity INT NOT NULL DEFAULT 0,
   featured BOOL NOT NULL DEFAULT FALSE,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -320,9 +329,13 @@ CREATE TABLE sales_item (
 --
 
 CREATE INDEX idx_sales_item_title ON sales_item(title);
-CREATE INDEX idx_sales_item_price ON sales_item(price);
-CREATE INDEX idx_sales_item_cost ON sales_item(cost);
-CREATE INDEX idx_sales_item_stock ON sales_item(stock);
+CREATE INDEX idx_sales_item_title_short ON sales_item(title_short);
+CREATE INDEX idx_sales_item_retail_case_price ON sales_item(retail_case_price);
+CREATE INDEX idx_sales_item_retail_unit_price ON sales_item(retail_unit_price);
+CREATE INDEX idx_sales_item_cost_case_price ON sales_item(cost_case_price);
+CREATE INDEX idx_sales_item_cost_unit_price ON sales_item(cost_unit_price);
+CREATE INDEX idx_sales_item_case_quantity ON sales_item(case_quantity);
+CREATE INDEX idx_sales_item_unit_quantity ON sales_item(unit_quantity);
 CREATE INDEX idx_sales_item_featured ON sales_item(featured);
 CREATE INDEX idx_sales_item_created_date ON sales_item(created_date);
 CREATE INDEX idx_sales_item_updated_date ON sales_item(updated_date);
@@ -376,6 +389,7 @@ CREATE TABLE store (
   latitude DECIMAL(7,5),
   longitude DECIMAL(8,5),
   featured BOOL NOT NULL DEFAULT FALSE,
+  store_account_id INT NOT NULL REFERENCES store_account(id) ON DELETE CASCADE,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(store_id)
@@ -387,6 +401,7 @@ CREATE INDEX idx_store_title ON store(title);
 CREATE INDEX idx_store_latitude ON store(latitude);
 CREATE INDEX idx_store_longitude ON store(longitude);
 CREATE INDEX idx_store_featured ON store(featured);
+CREATE INDEX idx_store_store_account_id ON store(store_account_id);
 CREATE INDEX idx_store_created_date ON store(created_date);
 CREATE INDEX idx_store_updated_date ON store(updated_date);
 
@@ -403,15 +418,38 @@ CREATE TABLE store_currency (
 CREATE TABLE sales_order_sales_item (
   sales_order_id INT NOT NULL REFERENCES sales_order(id) ON DELETE CASCADE,
   sales_item_id INT NOT NULL REFERENCES sales_item(id) ON DELETE CASCADE,
-  quantity INT NOT NULL DEFAULT 1,
-  units INT NOT NULL DEFAULT 0,
+  case_quantity INT NOT NULL DEFAULT 1,
+  unit_quantity INT NOT NULL DEFAULT 0,
+  case_price MONEY DEFAULT 0.00,
+  unit_price MONEY DEFAULT 0.00,
   PRIMARY KEY(sales_order_id, sales_item_id)
 );
 
 --
 
-CREATE INDEX idx_sales_order_sales_item_quantity ON sales_order_sales_item(quantity);
-CREATE INDEX idx_sales_order_sales_item_units ON sales_order_sales_item(units);
+CREATE INDEX idx_sales_order_sales_item_case_quantity ON sales_order_sales_item(case_quantity);
+CREATE INDEX idx_sales_order_sales_item_unit_quantity ON sales_order_sales_item(unit_quantity);
+CREATE INDEX idx_sales_order_sales_item_case_price ON sales_order_sales_item(case_price);
+CREATE INDEX idx_sales_order_sales_item_unit_price ON sales_order_sales_item(unit_price);
+
+--
+
+CREATE TABLE store_sales_item (
+  store_id INT NOT NULL REFERENCES store(id) ON DELETE CASCADE,
+  sales_item_id INT NOT NULL REFERENCES sales_item(id) ON DELETE CASCADE,
+  case_quantity INT NOT NULL DEFAULT 0,
+  unit_quantity INT NOT NULL DEFAULT 0,
+  case_price MONEY DEFAULT 0.00,
+  unit_price MONEY DEFAULT 0.00,
+  PRIMARY KEY(store_id, sales_item_id)
+);
+
+--
+
+CREATE INDEX idx_store_sales_item_case_quantity ON store_sales_item(case_quantity);
+CREATE INDEX idx_store_sales_item_unit_quantity ON store_sales_item(unit_quantity);
+CREATE INDEX idx_store_sales_item_case_price ON store_sales_item(case_price);
+CREATE INDEX idx_store_sales_item_unit_price ON store_sales_item(unit_price);
 
 -- category
 
@@ -451,14 +489,6 @@ CREATE TABLE store_account_category (
   store_account_id INT NOT NULL REFERENCES store_account(id) ON DELETE CASCADE,
   category_id INT NOT NULL REFERENCES category(id) ON DELETE CASCADE,
   PRIMARY KEY(store_account_id, category_id)
-);
-
--- store
-
-CREATE TABLE store_account_store (
-  store_account_id INT NOT NULL REFERENCES store_account(id) ON DELETE CASCADE,
-  store_id INT NOT NULL REFERENCES store(id) ON DELETE CASCADE,
-  PRIMARY KEY(store_account_id, store_id)
 );
 
 --
