@@ -28,9 +28,9 @@ INSERT INTO currency (title, title_url, code, symbol) VALUES ('Hungary Forint', 
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('Indonesia Rupiah', 'indonesia-rupiah', 'idr', '&#82;&#112;');
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('Israel Shekel', 'israel-shekel', 'ils', '&#8362;');
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('India Rupee', 'india-rupee', 'inr', '&#8377;');
-INSERT INTO currency (title, title_url, code, symbol) VALUES ('Iceland Krona', 'iceland-krona', 'isk', '&#107;&#114;');
-INSERT INTO currency (title, title_url, code, symbol) VALUES ('Japan Yen', 'japan-yen', 'jpy', '&#165;');
-INSERT INTO currency (title, title_url, code, symbol) VALUES ('South Korea Won', 'south-korea-won', 'krw', '&#8361;');
+INSERT INTO currency (title, title_url, code, symbol, multiplier_unit) VALUES ('Iceland Krona', 'iceland-krona', 'isk', '&#107;&#114;', 1);
+INSERT INTO currency (title, title_url, code, symbol, multiplier_unit) VALUES ('Japan Yen', 'japan-yen', 'jpy', '&#165;', 1);
+INSERT INTO currency (title, title_url, code, symbol, multiplier_unit) VALUES ('South Korea Won', 'south-korea-won', 'krw', '&#8361;', 1);
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('Mexico Peso', 'mexico-peso', 'mxn', '&#36;');
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('Malaysia Ringgit', 'malaysia-ringgit', 'myr', '&#82;&#77;');
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('Norway Krone', 'norway-krone', 'nok', '&#107;&#114;');
