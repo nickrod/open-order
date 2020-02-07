@@ -164,6 +164,7 @@ CREATE TABLE currency (
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(code),
+  UNIQUE(title),
   UNIQUE(title_url)
 );
 
@@ -227,7 +228,6 @@ CREATE TABLE sales_order (
   unit_quantity INT DEFAULT 0,
   notes TEXT CHECK(TRIM(notes) <> ''),
   pickup BOOL NOT NULL DEFAULT FALSE,
-  cash BOOL NOT NULL DEFAULT FALSE,
   enabled BOOL NOT NULL DEFAULT FALSE,
   deliver_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -247,7 +247,6 @@ CREATE INDEX idx_sales_order_case_quantity ON sales_order(case_quantity);
 CREATE INDEX idx_sales_order_unit_quantity ON sales_order(unit_quantity);
 CREATE INDEX idx_sales_order_notes ON sales_order(notes);
 CREATE INDEX idx_sales_order_pickup ON sales_order(pickup);
-CREATE INDEX idx_sales_order_cash ON sales_order(cash);
 CREATE INDEX idx_sales_order_enabled ON sales_order(enabled);
 CREATE INDEX idx_sales_order_deliver_date ON sales_order(deliver_date);
 CREATE INDEX idx_sales_order_created_date ON sales_order(created_date);
@@ -376,6 +375,7 @@ CREATE INDEX idx_checkin_updated_date ON checkin(updated_date);
 CREATE TABLE store (
   id SERIAL PRIMARY KEY,
   store_id INT,
+  store_number INT,
   title TEXT NOT NULL CHECK(TRIM(title) <> ''),
   description TEXT NOT NULL CHECK(TRIM(description) <> ''),
   latitude FLOAT,
@@ -389,6 +389,7 @@ CREATE TABLE store (
 
 --
 
+CREATE INDEX idx_store_number ON store(store_number);
 CREATE INDEX idx_store_title ON store(title);
 CREATE INDEX idx_store_latitude ON store(latitude);
 CREATE INDEX idx_store_longitude ON store(longitude);
@@ -517,32 +518,34 @@ CREATE TABLE total (
   total_categories INT NOT NULL DEFAULT 0,
   total_sales_items INT NOT NULL DEFAULT 0,
   total_sales_orders INT NOT NULL DEFAULT 0,
-  total_checkins INT NOT NULL DEFAULT 0
+  total_store_accounts INT NOT NULL DEFAULT 0,
+  total_checkins INT NOT NULL DEFAULT 0,
+  total_stores INT NOT NULL DEFAULT 0
 );
-
---
-
-CREATE TABLE salesman_total (
-  salesman_id INT NOT NULL REFERENCES salesman(id) ON DELETE CASCADE,
-  total_favorites INT NOT NULL DEFAULT 0,
-  PRIMARY KEY(salesman_id)
-);
-
---
-
-CREATE INDEX idx_salesman_total_total_favorites ON salesman_total(total_favorites);
 
 --
 
 CREATE TABLE sales_item_total (
-  item_id INT NOT NULL REFERENCES item(id) ON DELETE CASCADE,
+  sales_item_id INT NOT NULL REFERENCES sales_item(id) ON DELETE CASCADE,
   total_favorites INT NOT NULL DEFAULT 0,
-  PRIMARY KEY(item_id)
+  PRIMARY KEY(sales_item_id)
 );
 
 --
 
-CREATE INDEX idx_item_total_total_favorites ON item_total(total_favorites);
+CREATE INDEX idx_sales_item_total_total_favorites ON sales_item_total(total_favorites);
+
+--
+
+CREATE TABLE sales_order_total (
+  sales_order_id INT NOT NULL REFERENCES sales_order(id) ON DELETE CASCADE,
+  total_favorites INT NOT NULL DEFAULT 0,
+  PRIMARY KEY(sales_order_id)
+);
+
+--
+
+CREATE INDEX idx_sales_order_total_total_favorites ON sales_order_total(total_favorites);
 
 --
 
