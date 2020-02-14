@@ -12,6 +12,13 @@ namespace openorder\tools;
 
 class Validate
 {
+  public static function verifyPassword(string $password, string $hash): bool
+  {
+    return password_verify($password, $hash);
+  }
+
+  //
+
   public static function intLength(int $length, int $min = 0, int $max = 0): bool
   {
     if ($length < $min)

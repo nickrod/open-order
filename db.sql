@@ -128,11 +128,11 @@ CREATE TABLE user_account_auth (
   id SERIAL PRIMARY KEY,
   selector TEXT CHECK(TRIM(selector) <> ''),
   validator TEXT CHECK(TRIM(validator) <> ''),
-  token TEXT CHECK(TRIM(token) <> ''),
   user_account_id INT NOT NULL REFERENCES user_account(id) ON DELETE CASCADE,
   ip INET NOT NULL,
   authenticated BOOL NOT NULL DEFAULT FALSE,
   enabled BOOL NOT NULL DEFAULT TRUE,
+  expired_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP + INTERVAL '1 year',
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(selector)
 );
@@ -143,6 +143,7 @@ CREATE INDEX idx_user_account_auth_user_account_id ON user_account_auth(user_acc
 CREATE INDEX idx_user_account_auth_ip ON user_account_auth(ip);
 CREATE INDEX idx_user_account_auth_authenticated ON user_account_auth(authenticated);
 CREATE INDEX idx_user_account_auth_enabled ON user_account_auth(enabled);
+CREATE INDEX idx_user_account_auth_expired_date ON user_account_auth(expired_date);
 CREATE INDEX idx_user_account_auth_created_date ON user_account_auth(created_date);
 
 --
@@ -607,7 +608,31 @@ CREATE INDEX idx_category_total_total_services ON category_total(total_services)
 
 --
 
-CREATE TABLE account_total (
+CREATE TABLE user_account_total (
+  account_id INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+  total_item_favorites INT NOT NULL DEFAULT 0,
+  total_salesman_favorites INT NOT NULL DEFAULT 0,
+  total_gig_favorites INT NOT NULL DEFAULT 0,
+  total_service_favorites INT NOT NULL DEFAULT 0,
+  total_items INT NOT NULL DEFAULT 0,
+  total_gigs INT NOT NULL DEFAULT 0,
+  total_services INT NOT NULL DEFAULT 0,
+  PRIMARY KEY(account_id)
+);
+
+--
+
+CREATE INDEX idx_account_total_total_item_favorites ON account_total(total_item_favorites);
+CREATE INDEX idx_account_total_total_salesman_favorites ON account_total(total_salesman_favorites);
+CREATE INDEX idx_account_total_total_gig_favorites ON account_total(total_gig_favorites);
+CREATE INDEX idx_account_total_total_service_favorites ON account_total(total_service_favorites);
+CREATE INDEX idx_account_total_total_items ON account_total(total_items);
+CREATE INDEX idx_account_total_total_gigs ON account_total(total_gigs);
+CREATE INDEX idx_account_total_total_services ON account_total(total_services);
+
+--
+
+CREATE TABLE store_account_total (
   account_id INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
   total_item_favorites INT NOT NULL DEFAULT 0,
   total_salesman_favorites INT NOT NULL DEFAULT 0,

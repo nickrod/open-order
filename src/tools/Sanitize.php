@@ -16,6 +16,13 @@ use openorder\exceptions\SanitizeException;
 
 class Sanitize
 {
+  public static function getRandomString(int $length = 8): string
+  {
+    return bin2hex(random_bytes($length));
+  }
+
+  //
+
   public static function noHTML(string $str = ''): string
   {
     return htmlentities($str, ENT_QUOTES | ENT_HTML5, 'UTF-8');
