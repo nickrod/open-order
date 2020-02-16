@@ -2,6 +2,7 @@
 
 //
 
+use PDOException;
 use openorder\OpenOrder;
 
 //
@@ -16,4 +17,28 @@ error_reporting(E_ALL);
 
 //
 
-echo "test\n";
+try
+{
+  $site_config = new Config(['db_settings' => '/usr/local/']);
+
+  // settings
+
+  //
+
+  $site_config->getPdo()->beginTransaction();
+
+  // settings
+
+  //
+
+  $site_config->getPdo()->commit();
+}
+catch (PDOException $e)
+{
+  $site_config->getPdo()->rollback();
+  echo 'Caught PDO exception: ' . $e->getMessage() . PHP_EOL;
+}
+catch (OpenOrderException $e)
+{
+  echo 'Caught OpenOrder exception: ' . $e->getMessage() . PHP_EOL;
+}
