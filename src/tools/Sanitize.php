@@ -16,6 +16,20 @@ use openorder\exceptions\SanitizeException;
 
 class Sanitize
 {
+  public static function base64EncodeUrl(string $str = ''): string
+  {
+    return strtr(base64_encode($str), ['+' => '-', '/' => '_', '=' => '']);
+  }
+
+  //
+
+  public static function base64DecodeUrl(string $str = ''): string
+  {
+    return base64_decode(strtr($str, ['-' => '+', '_' => '/']));
+  }
+
+  //
+
   public static function getRandomString(int $length = 8): string
   {
     return bin2hex(random_bytes($length));
