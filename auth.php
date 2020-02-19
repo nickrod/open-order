@@ -2,13 +2,12 @@
 
 //
 
-declare(strict_types=1);
+include 'config.php';
 
 //
 
 use openorder\tools\Sanitize;
 use openorder\tools\Validate;
-use openorder\config\Config;
 use openorder\account\UserAccount;
 use openorder\account\UserAccountActive;
 use openorder\account\UserAccountAuth;
@@ -37,8 +36,8 @@ if (isset($auth_type))
 
     if (isset($auth_email))
     {
-      $site_url = Config::getInstance()->getSiteUrl();
-      $site_domain = str_replace('www.', '', $site_url);
+      $site_url = $site_config->getSiteUrl();
+      $site_domain = $site_config->getSiteDomain();
       $selector = Sanitize::getRandomString();
       $subject = 'Welcome to ' . parse_url($site_url, PHP_URL_HOST);
       $message = 'Please click the following link to complete registration:' . PHP_EOL . PHP_EOL . '<a href="' . $site_url . '?selector=' . $selector . '">' . $site_url . '?selector=' . $selector . '</a>';
@@ -60,7 +59,7 @@ else
     if (hash_equals(hash('sha256', $auth_selector), $auth_validator))
     {
       $authenticated = true;
-      setcookie('auth', Sanitize::getRandomString(), ['expires' => strtotime('+1 year'), 'path' => '/', 'domain' => parse_url(Config::getInstance()->getSiteUrl(), PHP_URL_HOST), 'samesite' => 'Strict', 'secure' => true, 'httponly' => true]);
+      setcookie('auth', Sanitize::getRandomString(), ['expires' => strtotime('+1 year'), 'path' => '/', 'domain' => $site_config->getSiteDomain(), 'samesite' => 'Strict', 'secure' => true, 'httponly' => true]);
     }
   }
 

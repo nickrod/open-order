@@ -43,13 +43,17 @@ class Config extends Singleton
 
   private $password;
 
-  // db settings ini
+  // settings file
 
-  private $db_settings;
+  private $settings_file;
 
   // site url
 
   private $site_url;
+
+  // site domain
+
+  private $site_domain;
 
   // constructor
 
@@ -83,9 +87,9 @@ class Config extends Singleton
 
     //
 
-    if (isset($column['db_settings']))
+    if (isset($column['settings_file']))
     {
-      $this->setDbSettings($column['db_settings']);
+      $this->setSettingsFile($column['settings_file']);
     }
 
     //
@@ -93,6 +97,13 @@ class Config extends Singleton
     if (isset($column['site_url']))
     {
       $this->setSiteUrl($column['site_url']);
+    }
+
+    //
+
+    if (isset($column['site_domain']))
+    {
+      $this->setSiteDomain($column['site_domain']);
     }
 
     // setup pdo object
@@ -112,6 +123,13 @@ class Config extends Singleton
 	public function getSiteUrl(): string
   {
     return $this->site_url;
+	}
+
+  //
+
+	public function getSiteDomain(): string
+  {
+    return $this->site_domain;
 	}
 
   // setters
@@ -151,16 +169,30 @@ class Config extends Singleton
 
   //
 
-	public function setDbSettings(string $db_settings): void
+	public function setSiteDomain(string $site_domain): void
   {
-    if (!file_exists($db_settings))
+    if (!filter_var($site_domain, FILTER_VALIDATE_DOMAIN))
     {
-      throw new \InvalidArgumentException('Db settings file does not exist: ' . $db_settings);
+      throw new \InvalidArgumentException('Site domain is invalid: ' . $site_domain);
     }
     else
     {
-      $this->db_settings = $db_settings;
-      $this->loadDbSettings();
+      $this->site_domain = $site_domain;
+    }
+  }
+
+  //
+
+	public function setSettingsFile(string $settings_file): void
+  {
+    if (!file_exists($settings_file))
+    {
+      throw new \InvalidArgumentException('Settings file does not exist: ' . $settings_file);
+    }
+    else
+    {
+      $this->settings_file = $settings_file;
+      $this->loadSettingsFile();
     }
 	}
 
@@ -187,17 +219,19 @@ class Config extends Singleton
 
   //
 
-  private function loadDbSettings(): void
+  private function loadSettingsFile(): void
   {
-    if (!$settings = parse_ini_file($this->db_settings, true))
+    if (!$settings = parse_ini_file($this->settings_file, true))
     {
-      throw new \InvalidArgumentException('Db settings file cannot be parsed: ' . $this->db_settings);
+      throw new \InvalidArgumentException('Settings file cannot be parsed: ' . $this->settings_file);
     }
     else
     {
       $this->setDsn($settings['database']['driver'] . ':host=' . $settings['database']['host'] . ';port=' . $settings['database']['port'] . ';dbname=' . $settings['database']['dbname'] . ';options=\'-c client_encoding=' . $settings['database']['charset'] . '\'');
       $this->setUsername($settings['database']['username']);
       $this->setPassword($settings['database']['password']);
+      $this->setSiteUrl($settings['site']['url']);
+      $this->setSiteDomain($settings['site']['domain']);
     }
   }
 }
