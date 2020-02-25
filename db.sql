@@ -130,9 +130,9 @@ CREATE TABLE user_account_auth (
   validator TEXT CHECK(TRIM(validator) <> ''),
   user_account_id INT NOT NULL REFERENCES user_account(id) ON DELETE CASCADE,
   ip INET NOT NULL,
-  authenticated BOOL NOT NULL DEFAULT FALSE,
+  activated BOOL NOT NULL DEFAULT FALSE,
   enabled BOOL NOT NULL DEFAULT TRUE,
-  expired_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP + INTERVAL '1 year',
+  expired_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   created_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(selector)
 );
@@ -141,7 +141,7 @@ CREATE TABLE user_account_auth (
 
 CREATE INDEX idx_user_account_auth_user_account_id ON user_account_auth(user_account_id);
 CREATE INDEX idx_user_account_auth_ip ON user_account_auth(ip);
-CREATE INDEX idx_user_account_auth_authenticated ON user_account_auth(authenticated);
+CREATE INDEX idx_user_account_auth_activated ON user_account_auth(activated);
 CREATE INDEX idx_user_account_auth_enabled ON user_account_auth(enabled);
 CREATE INDEX idx_user_account_auth_expired_date ON user_account_auth(expired_date);
 CREATE INDEX idx_user_account_auth_created_date ON user_account_auth(created_date);

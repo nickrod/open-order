@@ -30,7 +30,7 @@ class Sanitize
 
   //
 
-  public static function getRandomString(int $length = 8): string
+  public static function getRandomString(int $length = 10): string
   {
     return bin2hex(random_bytes($length));
   }

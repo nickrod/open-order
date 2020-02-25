@@ -1,5 +1,5 @@
 <?php
 
-include 'auth.php';
+include 'cookie.php';
 
 ?>
