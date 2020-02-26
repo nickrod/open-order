@@ -8,7 +8,6 @@ include 'config.php';
 
 use openorder\tools\Sanitize;
 use openorder\account\UserAccount;
-use openorder\account\UserAccountActive;
 use openorder\account\UserAccountAuth;
 
 // input type
@@ -21,39 +20,49 @@ if (isset($auth_type))
 {
   if ($auth_type == 'login')
   {
+    // input email
+
     $auth_email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
 
     //
 
     if (isset($auth_email))
     {
-      $user_account_exists = UserAccount::exists(['email' => $auth_email, 'enabled' => true, 'activated' => true]);
-
-      //
-
-      if ($user_account_exists)
+      try
       {
-        # set selector and validator
+        // check if user exists
 
-        $selector = Sanitize::getRandomString();
-        $validator = hash('sha256', $selector);
+        $user_account_exists = UserAccount::exists(['email' => $auth_email, 'enabled' => true]);
 
-        #
+        //
 
-        $user_account_auth = new UserAccountAuth(['' => '']);
-        $user_account_auth->save();
+        if ($user_account_exists)
+        {
+          # create selector/validator
 
-        # send activation email
+          $selector = Sanitize::getRandomString();
+          $validator = hash('sha256', $selector);
 
-        $site_url = $site_config->getSiteUrl();
-        $site_domain = $site_config->getSiteDomain();
+          # set account auth
 
-        # send email
+          $user_account_auth = new UserAccountAuth(['' => '']);
+          $user_account_auth->save();
 
-        $subject = 'Welcome to ' . $site_domain;
-        $message = 'Please click the following link to complete registration:' . PHP_EOL . PHP_EOL . '<a href="' . $site_url . '?selector=' . $selector . '">' . $site_url . '?selector=' . $selector . '</a>';
-        $headers = 'From: noreply@' . $site_domain . PHP_EOL . 'Reply-To: noreply@' . $site_domain . PHP_EOL . 'X-Mailer: PHP/' . phpversion();
-        mail(Sanitize::noHTML($auth_email), $subject, $message, $headers);
+          # get site url and domain
+
+          $site_url = $site_config->getSiteUrl();
+          $site_domain = $site_config->getSiteDomain();
+
+          # send activation email
+
+          $subject = 'Welcome to ' . $site_domain;
+          $message = 'Please click the following link to complete registration:' . PHP_EOL . PHP_EOL . '<a href="' . $site_url . '?selector=' . $selector . '">' . $site_url . '?selector=' . $selector . '</a>';
+          $headers = 'From: noreply@' . $site_domain . PHP_EOL . 'Reply-To: noreply@' . $site_domain . PHP_EOL . 'X-Mailer: PHP/' . phpversion();
+          mail(Sanitize::noHTML($auth_email), $subject, $message, $headers);
+        }
+      }
+      catch (Exception $e)
+      {
       }
     }
   }
