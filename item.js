@@ -1,0 +1,1 @@
+var item_title = [[], ["cvs napa trancas325","lucky napa trancas98","safeway napa trancas971"]]; var item_id = [[], ["325","98","971"]]; var item_size = [item_title[0].length, item_title[1].length];

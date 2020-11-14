@@ -2,49 +2,30 @@
 
 //
 
-include 'config.php';
+use openorder\auth\UserAccountAuth;
 
-//
-
-use openorder\account\UserAccountAuth;
-
-//
+// auth variable
 
 $authenticated = false;
 
-//
+// cookie selector
 
 $cookie_selector = filter_input(INPUT_COOKIE, 'auth');
 
 //
 
-if (isset($cookie_selector))
+if (isset($site_pdo) && isset($cookie_selector) && $cookie_selector !== false)
 {
-  try
+  $user_account_auth = UserAccountAuth::getObject($site_pdo, ['index' => ['selector' => $cookie_selector, 'enabled' => true]]);
+
+  //
+
+  if (isset($user_account_auth))
   {
-    $user_account_auth = UserAccountAuth::getObject(['selector' => $cookie_selector, 'enabled' => true, 'activated' => true]);
-
-    //
-
-    if (isset($user_account_auth))
+    if (hash_equals(hash('sha256', $cookie_selector), $user_account_auth->getValidator()))
     {
-      if (strtotime($user_account_auth->getExpiredDate()) > strtotime($user_account_auth->getCreatedDate()))
-      {
-        if (hash_equals(hash('sha256', $cookie_selector), $user_account_auth->getValidator()))
-        {
-          $authenticated = true;
-        }
-      }
-      else
-      {
-        $user_account_auth->setEnabled(false);
-        $user_account_auth->edit();
-        include 'logout.php';
-      }
+      $authenticated = true;
     }
-  }
-  catch (Exception $e)
-  {
   }
 }
 

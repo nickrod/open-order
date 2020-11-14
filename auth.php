@@ -6,66 +6,109 @@ include 'config.php';
 
 //
 
-use openorder\tools\Sanitize;
-use openorder\account\UserAccount;
-use openorder\account\UserAccountAuth;
+use openorder\util\Sanitize;
+use openorder\content\item\UserAccount;
+use openorder\auth\UserAccountAuth;
 
-// input type
+// display message
 
-$auth_type = filter_input(INPUT_POST, 'type');
+$message = '';
 
-//
+// input email
 
-if (isset($auth_type))
+$auth_email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+
+// check if email and cookie are set
+
+if (isset($auth_email) && $auth_email !== false)
 {
-  if ($auth_type == 'login')
+  if (!isset($_COOKIE['auth']))
   {
-    // input email
-
-    $auth_email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
-
-    //
-
-    if (isset($auth_email))
+    try
     {
-      try
-      {
-        // check if user exists
+      // begin transaction
 
-        $user_account_exists = UserAccount::exists(['email' => $auth_email, 'enabled' => true]);
+      $site_pdo->beginTransaction();
+
+      // check if user exists and is enabled
+
+      $user_account = UserAccount::getObject($site_pdo, ['index' => ['email' => $auth_email, 'enabled' => true, 'registered' => false]]);
+
+      //
+
+      if (isset($user_account))
+      {
+        // create selector/validator
+
+        $selector = Sanitize::getRandomString();
+        $validator = hash('sha256', $selector);
+        $ip = $_SERVER['REMOTE_ADDR'];
+
+        // send activation email
+
+        $from = 'noreply@' . $site_domain;
+        $to = Sanitize::noHTML($auth_email);
+        $subject = 'Welcome to ' . $site_domain;
+        $mail_message = 'Please click the following link to complete registration:' . PHP_EOL . PHP_EOL . '<a href="' . $site_url . '?selector=' . $selector . '">' . $site_url . '?selector=' . $selector . '</a>';
 
         //
 
-        if ($user_account_exists)
+        $header = [
+          'From' => $from,
+          'Content-Type' => 'text/html; charset=utf-8',
+          'Content-Transfer-Encoding' => 'base64',
+          'X-Mailer' => 'PHP/' . phpversion()
+        ];
+
+        //
+
+        $subject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+        $mail_message = base64_encode($mail_message);
+
+        //
+
+        if (mail($to, $subject, $mail_message, $header))
         {
-          # create selector/validator
+          // set account auth
 
-          $selector = Sanitize::getRandomString();
-          $validator = hash('sha256', $selector);
+          $user_account_auth = new UserAccountAuth(['selector' => $selector, 'validator' => $validator, 'user_account_id' => $user_account->getId(), 'ip' => $ip]);
+          $user_account_auth->save($site_pdo);
 
-          # set account auth
+          // set account registered
 
-          $user_account_auth = new UserAccountAuth(['' => '']);
-          $user_account_auth->save();
-
-          # get site url and domain
-
-          $site_url = $site_config->getSiteUrl();
-          $site_domain = $site_config->getSiteDomain();
-
-          # send activation email
-
-          $subject = 'Welcome to ' . $site_domain;
-          $message = 'Please click the following link to complete registration:' . PHP_EOL . PHP_EOL . '<a href="' . $site_url . '?selector=' . $selector . '">' . $site_url . '?selector=' . $selector . '</a>';
-          $headers = 'From: noreply@' . $site_domain . PHP_EOL . 'Reply-To: noreply@' . $site_domain . PHP_EOL . 'X-Mailer: PHP/' . phpversion();
-          mail(Sanitize::noHTML($auth_email), $subject, $message, $headers);
+          $user_account->setRegistered(true);
+          $user_account->edit($site_pdo);
         }
       }
-      catch (Exception $e)
-      {
-      }
+
+      //
+
+      $message = 'If that user exists, a welcome email will be sent to the provided email address.';
+
+      // end transaction
+
+      $site_pdo->commit();
+    }
+    catch (Exception $e)
+    {
+      $site_pdo->rollback();
+      throw $e;
     }
   }
+  else
+  {
+    $message = 'You must <a href="logout.php">logout</a> first.';
+  }
+}
+else
+{
+  $message = 'An email address has not been specified.';
 }
 
 ?>
+
+<html>
+  <body>
+    <p><?=$message . ' Return to the <a href="/">home</a> page.';?></p>
+  </body>
+</html>

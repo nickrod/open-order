@@ -1,17 +1,10 @@
--- admin
+-- total
 
-INSERT INTO admin (id) VALUES (1);
 INSERT INTO total (id) VALUES (1);
 
 -- currency
 
--- the first will be the default currency, change as needed
-
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('United States Dollar', 'united-states-dollar', 'usd', '&#36;');
-
--- uncomment if changing default currency
-
--- INSERT INTO currency (title, title_url, code, symbol) VALUES ('United States Dollar', 'united-states-dollar', 'usd', '&#36;');
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('Australia Dollar', 'australia-dollar', 'aud', '&#36;');
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('Bulgaria Lev', 'bulgaria-lev', 'bgn', '&#1083;&#1074;');
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('Brazil Real', 'brazil-real', 'brl', '&#82;&#36;');
@@ -46,13 +39,14 @@ INSERT INTO currency (title, title_url, code, symbol) VALUES ('Turkey Lira', 'tu
 INSERT INTO currency (title, title_url, code, symbol) VALUES ('South Africa Rand', 'south-africa-rand', 'zar', '&#82;');
 INSERT INTO currency (title, title_url, code, symbol, crypto) VALUES ('BCH', 'bch', 'bch', '&#579;', TRUE);
 INSERT INTO currency (title, title_url, code, symbol, crypto) VALUES ('BSV', 'bsv', 'bsv', '&#579;', TRUE);
-INSERT INTO currency (title, title_url, title_unit, code, symbol, symbol_unit, multiplier_unit, crypto) VALUES ('Bitcoin', 'bitcoin', 'bits', 'btc', '&#8383;', NULL, 1000000, TRUE);
+INSERT INTO currency (title, title_url, title_unit, code, symbol, symbol_unit, multiplier_unit, crypto) VALUES ('Bitcoin', 'bitcoin', 'mBTC', 'btc', '&#8383;', NULL, 1000, TRUE);
 INSERT INTO currency (title, title_url, code, symbol, crypto) VALUES ('Dash', 'dash', 'dash', '&#272;', TRUE);
 INSERT INTO currency (title, title_url, code, symbol, crypto) VALUES ('Digibyte', 'digibyte', 'dgb', '&#394;', TRUE);
 INSERT INTO currency (title, title_url, code, symbol, crypto) VALUES ('Dogecoin', 'dogecoin', 'doge', '&#272;', TRUE);
 INSERT INTO currency (title, title_url, code, symbol, crypto) VALUES ('ETC', 'etc', 'etc', '&#926;', TRUE);
 INSERT INTO currency (title, title_url, code, symbol, crypto) VALUES ('Ethereum', 'ethereum', 'eth', '&#926;', TRUE);
-INSERT INTO currency (title, title_url, title_unit, code, symbol, symbol_unit, multiplier_unit, crypto) VALUES ('Litecoin', 'litecoin', 'lites', 'ltc', '&#321;', '&#322;', 1000, TRUE);
+INSERT INTO currency (title, title_url, code, symbol, crypto) VALUES ('Grin', 'grin', 'grin', '&#x30C4;', TRUE);
+INSERT INTO currency (title, title_url, title_unit, code, symbol, symbol_unit, multiplier_unit, crypto) VALUES ('Litecoin', 'litecoin', 'mLTC', 'ltc', '&#321;', NULL, 1000, TRUE);
 INSERT INTO currency (title, title_url, code, symbol, crypto) VALUES ('Monero', 'monero', 'xmr', '&#625;', TRUE);
 INSERT INTO currency (title, title_url, code, symbol, crypto) VALUES ('Ripple', 'ripple', 'xrp', '&#625;', TRUE);
 INSERT INTO currency (title, title_url, code, symbol, crypto) VALUES ('Zcash', 'zcash', 'zec', '&#9449;', TRUE);

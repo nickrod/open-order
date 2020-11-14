@@ -1,3 +1,10 @@
 # composer
 composer.lock
 /vendor/
+bootstrap.min.css
+bootstrap.min.js
+jquery.slim.min.js
+sales_item.sql
+popper.min.js
+test.php
+test2.php

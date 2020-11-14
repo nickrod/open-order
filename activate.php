@@ -6,72 +6,95 @@ include 'config.php';
 
 //
 
-use openorder\account\UserAccountActive;
-use openorder\account\UserAccountAuth;
-use openorder\tools\Sanitize;
+use openorder\util\Sanitize;
+use openorder\auth\UserAccountAuth;
+use openorder\content\item\UserAccount;
+
+// display message
+
+$message = '';
 
 // input selector
 
 $auth_selector = filter_input(INPUT_GET, 'selector');
 
-//
+// check if selector is set
 
-if (isset($auth_selector))
+if (isset($auth_selector) && $auth_selector !== false)
 {
-  try
+  if (!isset($_COOKIE['auth']))
   {
-    // check if user auth exists
-
-    $user_account_auth = UserAccountAuth::getObject(['selector' => $auth_selector, 'enabled' => true, 'activated' => false]);
-
-    //
-
-    if (isset($user_account_auth))
+    try
     {
-      if (strtotime($user_account_auth->getExpiredDate()) > strtotime($user_account_auth->getCreatedDate()))
+      // begin transaction
+
+      $site_pdo->beginTransaction();
+
+      // check if user auth exists
+
+      $user_account_auth = UserAccountAuth::getObject($site_pdo, ['index' => ['selector' => $auth_selector, 'enabled' => true]]);
+
+      //
+
+      if (isset($user_account_auth))
       {
         if (hash_equals(hash('sha256', $auth_selector), $user_account_auth->getValidator()))
         {
-          # create selector/validator
+          // create selector/validator
 
           $selector = Sanitize::getRandomString();
           $validator = hash('sha256', $selector);
+          $ip = $_SERVER['REMOTE_ADDR'];
 
-          # set account activated
+          // create cookie auth
 
-          $user_account_auth->setActivated(true);
-          $user_account_auth->edit();
+          $user_account_auth_cookie = new UserAccountAuth(['selector' => $selector, 'validator' => $validator, 'user_account_id' => $user_account_auth->getUserAccountId(), 'ip' => $ip]);
+          $user_account_auth_cookie->save($site_pdo);
 
-          # create active account
+          // set account auth disabled
 
-          $user_account_active = new UserAccountActive(['' => '']);
-          $user_account_active->save();
+          $user_account_auth->setEnabled(false);
+          $user_account_auth->edit($site_pdo);
 
-          # create cookie auth
+          // set registered disabled
 
-          $user_account_auth_cookie = new UserAccountAuth(['' => '']);
-          $user_account_auth_cookie->save();
+          $user_account = new UserAccount(['id' => $user_account_auth->getUserAccountId(), 'registered' => false]);
+          $user_account->edit($site_pdo);
 
-          # set cookie
+          // set cookie
 
-          setcookie('auth', $selector, ['expires' => strtotime('+1 year'), 'path' => '/', 'domain' => $site_config->getSiteDomain(), 'samesite' => 'Strict', 'secure' => true, 'httponly' => true]);
-
-          // redirect to the home page
-
-          header('Location: index.php', true, 302);
-          exit();
+          setcookie('auth', $selector, ['expires' => strtotime('+1 year'), 'path' => '/', 'domain' => $site_domain, 'samesite' => 'Strict', 'secure' => true, 'httponly' => true]);
         }
       }
-      else
-      {
-        $user_account_auth->setEnabled(false);
-        $user_account_auth->edit();
-      }
+
+      //
+
+      $message = 'If that user exists, then the account has been successfully activated and you are logged in.';
+
+      // end transaction
+
+      $site_pdo->commit();
+    }
+    catch (Exception $e)
+    {
+      $site_pdo->rollback();
+      throw $e;
     }
   }
-  catch (Exception $e)
+  else
   {
+    $message = 'You must <a href="logout.php">logout</a> first.';
   }
+}
+else
+{
+  $message = 'A selector has not been specified.';
 }
 
 ?>
+
+<html>
+  <body>
+    <p><?=$message . ' Return to the <a href="/">home</a> page.';?></p>
+  </body>
+</html>

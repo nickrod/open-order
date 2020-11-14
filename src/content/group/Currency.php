@@ -10,13 +10,14 @@ namespace openorder\content\group;
 
 //
 
-use openorder\base\Table;
-use openorder\tools\Validate;
-use openorder\tools\Sanitize;
+use openorder\database\SimpleDb;
+use openorder\util\Validate;
+use openorder\util\Sanitize;
+use openorder\total\Total;
 
 //
 
-class Currency extends Table
+class Currency extends SimpleDb
 {
   // variables
 
@@ -25,39 +26,37 @@ class Currency extends Table
   protected $title;
   protected $title_url;
   protected $title_unit;
-  protected $page_title;
-  protected $page_description;
-  protected $page_header;
-  protected $featured;
-  protected $crypto;
   protected $symbol;
   protected $symbol_unit;
   protected $multiplier_unit;
+  protected $price;
+  protected $featured;
+  protected $crypto;
   protected $created_date;
   protected $updated_date;
 
   // constants
 
   public const TABLE = 'currency';
+  public const TABLE_KEY = 'id';
+  public const TABLE_SEQ = 'currency_id_seq';
 
   //
 
   public const COLUMN = [
     'id' => ['key' => true, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'code' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false, 'min_length' => 2, 'max_length' => 6],
-    'title' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false, 'min_length' => 2, 'max_length' => 200, 'search' => true],
-    'title_url' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false, 'min_length' => 2, 'max_length' => 200, 'max_display' => 80],
-    'title_unit' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false, 'min_length' => 2, 'max_length' => 100],
-    'page_title' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false, 'min_length' => 0, 'max_length' => 300, 'max_display' => 200],
-    'page_description' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false, 'min_length' => 0, 'max_length' => 300, 'max_display' => 200],
-    'page_header' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false, 'min_length' => 0, 'max_length' => 300, 'max_display' => 200],
+    'code' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
+    'title' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true, 'search' => true],
+    'title_url' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'title_unit' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
+    'symbol' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
+    'symbol_unit' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
+    'multiplier_unit' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
+    'price' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'featured' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
-    'crypto' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
-    'symbol' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false, 'min_length' => 2, 'max_length' => 60],
-    'symbol_unit' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false, 'min_length' => 2, 'max_length' => 60],
-    'multiplier_unit' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false, 'min_length' => 1, 'max_length' => 100000000],
-    'created_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => true],
-    'updated_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => true]
+    'crypto' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
+    'created_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
+    'updated_date' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => true]
   ];
 
   // constructor
@@ -92,41 +91,6 @@ class Currency extends Table
 
     //
 
-    if (isset($column['page_title']))
-    {
-      $this->setPageTitle($column['page_title']);
-    }
-
-    //
-
-    if (isset($column['page_description']))
-    {
-      $this->setPageDescription($column['page_description']);
-    }
-
-    //
-
-    if (isset($column['page_header']))
-    {
-      $this->setPageHeader($column['page_header']);
-    }
-
-    //
-
-    if (isset($column['featured']))
-    {
-      $this->setFeatured($column['featured']);
-    }
-
-    //
-
-    if (isset($column['crypto']))
-    {
-      $this->setCrypto($column['crypto']);
-    }
-
-    //
-
     if (isset($column['symbol']))
     {
       $this->setSymbol($column['symbol']);
@@ -144,6 +108,27 @@ class Currency extends Table
     if (isset($column['multiplier_unit']))
     {
       $this->setMultiplierUnit($column['multiplier_unit']);
+    }
+
+    //
+
+    if (isset($column['price']))
+    {
+      $this->setPrice($column['price']);
+    }
+
+    //
+
+    if (isset($column['featured']))
+    {
+      $this->setFeatured($column['featured']);
+    }
+
+    //
+
+    if (isset($column['crypto']))
+    {
+      $this->setCrypto($column['crypto']);
     }
   }
 
@@ -172,70 +157,56 @@ class Currency extends Table
 
   public function getTitleUrl(): string 
   {
-    return Sanitize::noHTML(urlencode(Sanitize::length($this->title_url, self::COLUMN['title_url']['max_display'])));
+    return Sanitize::noHTML(urlencode($this->title_url));
   }
 
   //
 
-  public function getTitleUnit(): string 
+  public function getTitleUnit(): ?string 
   {
-    return Sanitize::noHTML($this->title_unit);
+    return (is_null($this->title_unit)) ? null : Sanitize::noHTML($this->title_unit);
   }
 
   //
 
-  public function getPageTitle(): string 
+  public function getSymbol(): ?string 
   {
-    return Sanitize::noHTML(Sanitize::length($this->page_title, self::COLUMN['page_title']['max_display']));
+    return (is_null($this->symbol)) ? null : Sanitize::noHTML($this->symbol);
   }
 
   //
 
-  public function getPageDescription(): string 
+  public function getSymbolUnit(): ?string 
   {
-    return Sanitize::noHTML(Sanitize::length($this->page_description, self::COLUMN['page_description']['max_display']));
+    return (is_null($this->symbol_unit)) ? null : Sanitize::noHTML($this->symbol_unit);
   }
 
   //
 
-  public function getPageHeader(): string 
+  public function getMultiplierUnit(): ?int 
   {
-    return Sanitize::noHTML(Sanitize::length($this->page_header, self::COLUMN['page_header']['max_display']));
+    return $this->multiplier_unit;
+  }
+
+  //
+
+  public function getPrice(): ?float 
+  {
+    return $this->price;
   }
 
   //
 
   public function getFeatured(): bool 
   {
-    return Sanitize::getBoolean($this->featured);
+    return $this->featured;
   }
 
   //
 
   public function getCrypto(): bool 
   {
-    return Sanitize::getBoolean($this->crypto);
-  }
-
-  //
-
-  public function getSymbol(): string 
-  {
-    return Sanitize::noHTML($this->symbol);
-  }
-
-  //
-
-  public function getSymbolUnit(): string 
-  {
-    return Sanitize::noHTML($this->symbol_unit);
-  }
-
-  //
-
-  public function getMultiplierUnit(): int 
-  {
-    return $this->multiplier_unit;
+    return $this->crypto;
   }
 
   //
@@ -256,7 +227,7 @@ class Currency extends Table
 
   public function setId(int $id): void 
   {
-    if ($id > 0)
+    if (Validate::intLength($id, 1))
     {
       $this->id = $id;
     }
@@ -266,7 +237,7 @@ class Currency extends Table
 
   public function setCode(string $code): void 
   {
-    if (Validate::strLength($code, self::COLUMN['code']['min_length'], self::COLUMN['code']['max_length']))
+    if (Validate::strLength($code, 2, 6))
     {
       $this->code = $code;
     }
@@ -276,7 +247,7 @@ class Currency extends Table
 
   public function setTitle(string $title): void 
   {
-    if (Validate::strLength($title, self::COLUMN['title']['min_length'], self::COLUMN['title']['max_length']))
+    if (Validate::strLength($title, 1, 60))
     {
       $this->title = $title;
       $this->setTitleUrl($title);
@@ -287,7 +258,7 @@ class Currency extends Table
 
   private function setTitleUrl(string $title_url): void 
   {
-    if (Validate::strLength($title_url, self::COLUMN['title_url']['min_length'], self::COLUMN['title_url']['max_length']))
+    if (Validate::strLength($title_url, 1, 70))
     {
       $this->title_url = Sanitize::slugify($title_url);
     }
@@ -295,9 +266,9 @@ class Currency extends Table
 
   //
 
-  private function setTitleUnit(string $title_unit): void 
+  private function setTitleUnit(?string $title_unit): void 
   {
-    if (Validate::strLength($title_unit, self::COLUMN['title_unit']['min_length'], self::COLUMN['title_unit']['max_length']))
+    if (is_null($title_unit) || Validate::strLength($title_unit, 1, 60))
     {
       $this->title_unit = $title_unit;
     }
@@ -305,32 +276,39 @@ class Currency extends Table
 
   //
 
-  public function setPageTitle(string $page_title): void 
+  public function setSymbol(?string $symbol): void 
   {
-    if (Validate::strLength($page_title, self::COLUMN['page_title']['min_length'], self::COLUMN['page_title']['max_length']))
+    if (is_null($symbol) || Validate::strLength($symbol, 1, 60))
     {
-      $this->page_title = $page_title;
+      $this->symbol = $symbol;
     }
   }
 
   //
 
-  public function setPageDescription(string $page_description): void 
+  public function setSymbolUnit(?string $symbol_unit): void 
   {
-    if (Validate::strLength($page_description, self::COLUMN['page_description']['min_length'], self::COLUMN['page_description']['max_length']))
+    if (is_null($symbol_unit) || Validate::strLength($symbol_unit, 1, 60))
     {
-      $this->page_description = $page_description;
+      $this->symbol_unit = $symbol_unit;
     }
   }
 
   //
 
-  public function setPageHeader(string $page_header): void 
+  public function setMultiplierUnit(?int $multiplier_unit): void 
   {
-    if (Validate::strLength($page_header, self::COLUMN['page_header']['min_length'], self::COLUMN['page_header']['max_length']))
+    if (is_null($multiplier_unit) || Validate::intLength($multiplier_unit, 1))
     {
-      $this->page_header = $page_header;
+      $this->multiplier_unit = $multiplier_unit;
     }
+  }
+
+  //
+
+  public function setPrice(?float $price): void 
+  {
+    $this->price = (is_null($price) || !Validate::intLength(Sanitize::setFloat($price), 1)) ? null : Sanitize::setFloat($price);
   }
 
   //
@@ -349,31 +327,19 @@ class Currency extends Table
 
   //
 
-  public function setSymbol(string $symbol): void 
+  public static function getTotal(\PDO $pdo): int
   {
-    if (Validate::strLength($symbol, self::COLUMN['symbol']['min_length'], self::COLUMN['symbol']['max_length']))
+    $return_object = Total::getObject($pdo, ['index' => ['id' => 1]]);
+
+    //
+
+    if (!isset($return_object))
     {
-      $this->symbol = $symbol;
+      return 0;
     }
-  }
-
-  //
-
-  public function setSymbolUnit(string $symbol_unit): void 
-  {
-    if (Validate::strLength($symbol_unit, self::COLUMN['symbol_unit']['min_length'], self::COLUMN['symbol_unit']['max_length']))
+    else
     {
-      $this->symbol_unit = $symbol_unit;
-    }
-  }
-
-  //
-
-  public function setMultiplierUnit(int $multiplier_unit): void 
-  {
-    if (Validate::intLength($multiplier_unit, self::COLUMN['multiplier_unit']['min_length'], self::COLUMN['multiplier_unit']['max_length']))
-    {
-      $this->multiplier_unit = $multiplier_unit;
+      return $return_object->getTotalCurrency();
     }
   }
 }

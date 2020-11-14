@@ -6,33 +6,35 @@ declare(strict_types=1);
 
 //
 
-namespace openorder\content\group;
+namespace openorder\content\item;
 
 //
 
-use openorder\database\SimpleDb;
 use openorder\util\Validate;
 use openorder\util\Sanitize;
 use openorder\total\Total;
 
 //
 
-class Category extends SimpleDb
+class StoreAccount extends Item
 {
   // variables
 
   protected $id;
   protected $title;
   protected $title_url;
+  protected $account_id;
   protected $featured;
   protected $created_date;
   protected $updated_date;
 
   // constants
 
-  public const TABLE = 'category';
+  public const TABLE = 'store_account';
   public const TABLE_KEY = 'id';
-  public const TABLE_SEQ = 'category_id_seq';
+  public const TABLE_SEQ = 'store_account_id_seq';
+  public const CATEGORY = 'openorder\content\tag\category\StoreAccount';
+  public const FAVORITE = 'openorder\content\tag\favorite\StoreAccount';
 
   //
 
@@ -40,19 +42,14 @@ class Category extends SimpleDb
     'id' => ['key' => true, 'index' => true, 'allowed' => false, 'order_by' => false],
     'title' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true, 'search' => true],
     'title_url' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'account_id' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'featured' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
     'created_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
     'updated_date' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => true],
-    'sales_item_category' . '__' . 'sales_item_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'sales_order_category' . '__' . 'sales_order_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'store_category' . '__' . 'store_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'store_account_category' . '__' . 'store_account_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'user_account_category' . '__' . 'user_account_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'sales_item_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
-    'sales_order_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
-    'store_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
-    'store_account_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
-    'user_account_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true]
+    'store_account_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'store_account_favorite' . '__' . 'favorite_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'store_account_category' . '__' . 'store_account_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
+    'store_account_favorite' . '__' . 'store_account_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true]
   ];
 
   // constructor
@@ -69,6 +66,13 @@ class Category extends SimpleDb
     if (isset($column['title']))
     {
       $this->setTitle($column['title']);
+    }
+
+    //
+
+    if (isset($column['account_id']))
+    {
+      $this->setAccountId($column['account_id']);
     }
 
     //
@@ -98,6 +102,13 @@ class Category extends SimpleDb
   public function getTitleUrl(): string 
   {
     return Sanitize::noHTML(urlencode($this->title_url));
+  }
+
+  //
+
+  public function getAccountId(): ?int 
+  {
+    return $this->account_id;
   }
 
   //
@@ -154,6 +165,16 @@ class Category extends SimpleDb
 
   //
 
+  public function setAccountId(?int $account_id): void 
+  {
+    if (is_null($account_id) || Validate::intLength($account_id, 1))
+    {
+      $this->account_id = $account_id;
+    }
+  }
+
+  //
+
   public function setFeatured(bool $featured): void 
   {
     $this->featured = Sanitize::setBoolean($featured);
@@ -173,7 +194,7 @@ class Category extends SimpleDb
     }
     else
     {
-      return $return_object->getTotalCategory();
+      return $return_object->getTotalStoreAccount();
     }
   }
 }

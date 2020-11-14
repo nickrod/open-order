@@ -10,24 +10,22 @@ namespace openorder\total;
 
 //
 
-use openorder\base\Table;
+use openorder\database\SimpleDb;
 
 //
 
-class Total extends Table
+class Total extends SimpleDb
 {
   // variables
 
   protected $id;
-  protected $total_accounts;
-  protected $total_accounts_active;
-  protected $total_currencies;
-  protected $total_categories;
-  protected $total_locations;
-  protected $total_blogs;
-  protected $total_consultants;
-  protected $total_gigs;
-  protected $total_services;
+  protected $total_user_account;
+  protected $total_currency;
+  protected $total_category;
+  protected $total_sales_item;
+  protected $total_sales_order;
+  protected $total_store_account;
+  protected $total_store;
 
   // constants
 
@@ -37,15 +35,13 @@ class Total extends Table
 
   public const COLUMN = [
     'id' => ['key' => true, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'total_accounts' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
-    'total_accounts_active' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
-    'total_currencies' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
-    'total_categories' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
-    'total_locations' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
-    'total_blogs' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
-    'total_consultants' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
-    'total_gigs' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
-    'total_services' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false]
+    'total_user_account' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
+    'total_currency' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
+    'total_category' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
+    'total_sales_item' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
+    'total_sales_order' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
+    'total_store_account' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
+    'total_store' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false]
   ];
 
   // getters
@@ -57,64 +53,50 @@ class Total extends Table
 
   //
 
-  public function getTotalAccounts(): int 
+  public function getTotalUserAccount(): int 
   {
-    return $this->total_accounts;
+    return $this->total_user_account;
   }
 
   //
 
-  public function getTotalAccountsActive(): int 
+  public function getTotalCurrency(): int 
   {
-    return $this->total_accounts_active;
+    return $this->total_currency;
   }
 
   //
 
-  public function getTotalCurrencies(): int 
+  public function getTotalCategory(): int 
   {
-    return $this->total_currencies;
+    return $this->total_category;
   }
 
   //
 
-  public function getTotalCategories(): int 
+  public function getTotalSalesItem(): int 
   {
-    return $this->total_categories;
+    return $this->total_sales_item;
   }
 
   //
 
-  public function getTotalLocations(): int 
+  public function getTotalSalesOrder(): int 
   {
-    return $this->total_locations;
+    return $this->total_sales_order;
   }
 
   //
 
-  public function getTotalBlogs(): int 
+  public function getTotalStoreAccount(): int 
   {
-    return $this->total_blogs;
+    return $this->total_store_account;
   }
 
   //
 
-  public function getTotalConsultants(): int 
+  public function getTotalStore(): int 
   {
-    return $this->total_consultants;
-  }
-
-  //
-
-  public function getTotalGigs(): int 
-  {
-    return $this->total_gigs;
-  }
-
-  //
-
-  public function getTotalServices(): int 
-  {
-    return $this->total_services;
+    return $this->total_store;
   }
 }
