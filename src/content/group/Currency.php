@@ -30,8 +30,8 @@ class Currency extends SimpleDb
   protected $symbol_unit;
   protected $multiplier_unit;
   protected $price;
-  protected $featured;
-  protected $crypto;
+  protected $featured = 0;
+  protected $crypto = 0;
   protected $created_date;
   protected $updated_date;
 
@@ -47,7 +47,7 @@ class Currency extends SimpleDb
     'id' => ['key' => true, 'index' => true, 'allowed' => false, 'order_by' => false],
     'code' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'title' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true, 'search' => true],
-    'title_url' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'title_url' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'title_unit' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'symbol' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'symbol_unit' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],

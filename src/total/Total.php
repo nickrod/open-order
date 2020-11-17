@@ -19,13 +19,13 @@ class Total extends SimpleDb
   // variables
 
   protected $id;
-  protected $total_user_account;
-  protected $total_currency;
-  protected $total_category;
-  protected $total_sales_item;
-  protected $total_sales_order;
-  protected $total_store_account;
-  protected $total_store;
+  protected $total_user_account = 0;
+  protected $total_currency = 0;
+  protected $total_category = 0;
+  protected $total_sales_item = 0;
+  protected $total_sales_order = 0;
+  protected $total_store_account = 0;
+  protected $total_store = 0;
 
   // constants
 

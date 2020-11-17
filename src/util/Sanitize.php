@@ -85,7 +85,7 @@ class Sanitize
   {
     header('Cache-Control: max-age=0, no-cache, must-revalidate');
     header('Content-Type: text/csv');
-    header('Content-Disposition: attachment; filename=' . $file . ')';
+    header('Content-Disposition: attachment; filename=' . $file);
 
     //
 

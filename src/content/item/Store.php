@@ -28,7 +28,7 @@ class Store extends Item
   protected $store_number;
   protected $latitude;
   protected $longitude;
-  protected $featured;
+  protected $featured = 0;
   protected $created_date;
   protected $updated_date;
 
@@ -45,7 +45,7 @@ class Store extends Item
   public const COLUMN = [
     'id' => ['key' => true, 'index' => true, 'allowed' => false, 'order_by' => false],
     'title' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true, 'search' => true],
-    'title_url' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'title_url' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'store_account_title_url' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
     'store_id' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'store_number' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],

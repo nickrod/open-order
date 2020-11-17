@@ -24,7 +24,7 @@ class Category extends SimpleDb
   protected $id;
   protected $title;
   protected $title_url;
-  protected $featured;
+  protected $featured = 0;
   protected $created_date;
   protected $updated_date;
 
@@ -39,7 +39,7 @@ class Category extends SimpleDb
   public const COLUMN = [
     'id' => ['key' => true, 'index' => true, 'allowed' => false, 'order_by' => false],
     'title' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true, 'search' => true],
-    'title_url' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'title_url' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'featured' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
     'created_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
     'updated_date' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => true],

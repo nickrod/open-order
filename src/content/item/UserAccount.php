@@ -30,9 +30,9 @@ class UserAccount extends Item
   protected $account_id;
   protected $min_order_price;
   protected $max_order_price;
-  protected $admin;
-  protected $registered;
-  protected $enabled;
+  protected $admin = 0;
+  protected $registered = 0;
+  protected $enabled = 1;
   protected $created_date;
   protected $updated_date;
 
@@ -51,7 +51,7 @@ class UserAccount extends Item
     'id' => ['key' => true, 'index' => true, 'allowed' => false, 'order_by' => false],
     'email' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'name' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true, 'search' => true],
-    'name_url' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'name_url' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'phone' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'password' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'pubkey' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],

@@ -25,7 +25,7 @@ class UserAccountAuth extends SimpleDb
   protected $validator;
   protected $ip;
   protected $user_account_id;
-  protected $enabled;
+  protected $enabled = 1;
   protected $created_date;
   protected $updated_date;
 

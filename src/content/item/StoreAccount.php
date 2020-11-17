@@ -24,7 +24,7 @@ class StoreAccount extends Item
   protected $title;
   protected $title_url;
   protected $account_id;
-  protected $featured;
+  protected $featured = 0;
   protected $created_date;
   protected $updated_date;
 
@@ -41,7 +41,7 @@ class StoreAccount extends Item
   public const COLUMN = [
     'id' => ['key' => true, 'index' => true, 'allowed' => false, 'order_by' => false],
     'title' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true, 'search' => true],
-    'title_url' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'title_url' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'account_id' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'featured' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
     'created_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],

@@ -41,8 +41,8 @@ class SalesItem extends Item
   protected $unit_discount_percent;
   protected $case_discount_quantity;
   protected $unit_discount_quantity;
-  protected $featured;
-  protected $instock;
+  protected $featured = 0;
+  protected $instock = 1;
   protected $instock_date;
   protected $created_date;
   protected $updated_date;
@@ -60,7 +60,7 @@ class SalesItem extends Item
   public const COLUMN = [
     'id' => ['key' => true, 'index' => true, 'allowed' => false, 'order_by' => false],
     'title' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true, 'search' => true],
-    'title_url' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'title_url' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'image_url' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'upc' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'case_dimension' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],

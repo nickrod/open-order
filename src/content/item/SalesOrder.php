@@ -39,9 +39,9 @@ class SalesOrder extends Item
   protected $unit_quantity;
   protected $latitude;
   protected $longitude;
-  protected $pickup;
-  protected $paid;
-  protected $enabled;
+  protected $pickup = 0;
+  protected $paid = 0;
+  protected $enabled = 0;
   protected $deliver_date;
   protected $created_date;
   protected $updated_date;
@@ -642,7 +642,11 @@ class SalesOrder extends Item
 
         if (is_int($sales_item_id) && Validate::intLength($sales_item_id, 1) && ($case_quantity !== null || $unit_quantity !== null))
         {
-          if ($item_object = SalesItem::getObject($pdo, ['index' => ['item_id' => $sales_item_id]]))
+          $item_object = SalesItem::getObject($pdo, ['index' => ['item_id' => $sales_item_id]]);
+
+          //
+
+          if (isset($item_object))
           {
             $case_price = $item_object->getCasePrice();
             $unit_price = $item_object->getUnitPrice();
@@ -719,9 +723,17 @@ class SalesOrder extends Item
       {
         if (is_int($sales_item_id) && Validate::intLength($sales_item_id, 1))
         {
-          if ($item_object = SalesItem::getObject($pdo, ['index' => ['item_id' => $sales_item_id]]))
+          $item_object = SalesItem::getObject($pdo, ['index' => ['item_id' => $sales_item_id]]);
+
+          //
+
+          if (isset($item_object))
           {
-            if ($order_object = (self::SALES_ITEM)::getObject($pdo, ['index' => ['sales_order_id' => $this->id, 'sales_item_id' => $item_object->getId()]]))
+            $order_object = (self::SALES_ITEM)::getObject($pdo, ['index' => ['sales_order_id' => $this->id, 'sales_item_id' => $item_object->getId()]]);
+
+            //
+
+            if (isset($order_object))
             {
               $case_quantity = $order_object->getCaseQuantity();
               $unit_quantity = $order_object->getUnitQuantity();
