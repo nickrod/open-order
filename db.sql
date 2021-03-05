@@ -192,6 +192,7 @@ CREATE TABLE sales_order (
   base_currency_code TEXT NOT NULL CHECK(TRIM(base_currency_code) <> '') REFERENCES currency(code) ON DELETE CASCADE,
   user_account_name_url TEXT CHECK(TRIM(user_account_name_url) <> '') REFERENCES user_account(name_url) ON DELETE SET NULL,
   store_title_url TEXT NOT NULL CHECK(TRIM(store_title_url) <> '') REFERENCES store(title_url) ON DELETE CASCADE,
+  base_store_title_url TEXT NOT NULL CHECK(TRIM(base_store_title_url) <> '') REFERENCES store(title_url) ON DELETE CASCADE,
   order_id INT CHECK(order_id > 0),
   total_weight INT CHECK(total_weight > 0),
   total_volume INT CHECK(total_volume > 0),
@@ -205,6 +206,7 @@ CREATE TABLE sales_order (
   unit_quantity INT CHECK(unit_quantity > 0),
   latitude FLOAT CHECK(latitude > 0),
   longitude FLOAT CHECK(longitude > 0),
+  distance FLOAT CHECK(distance > 0),
   pickup BOOL NOT NULL DEFAULT FALSE,
   paid BOOL NOT NULL DEFAULT FALSE,
   enabled BOOL NOT NULL DEFAULT FALSE,
@@ -221,6 +223,11 @@ CREATE INDEX idx_sales_order_currency_code ON sales_order(currency_code);
 CREATE INDEX idx_sales_order_base_currency_code ON sales_order(base_currency_code);
 CREATE INDEX idx_sales_order_user_account_name_url ON sales_order(user_account_name_url);
 CREATE INDEX idx_sales_order_store_title_url ON sales_order(store_title_url);
+CREATE INDEX idx_sales_order_base_store_title_url ON sales_order(base_store_title_url);
+CREATE INDEX idx_sales_order_total_weight ON sales_order(total_weight);
+CREATE INDEX idx_sales_order_total_volume ON sales_order(total_volume);
+CREATE INDEX idx_sales_order_total_price ON sales_order(total_price);
+CREATE INDEX idx_sales_order_distance ON sales_order(distance);
 CREATE INDEX idx_sales_order_enabled ON sales_order(enabled);
 CREATE INDEX idx_sales_order_updated_date ON sales_order(updated_date);
 

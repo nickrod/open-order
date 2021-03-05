@@ -35,7 +35,7 @@ class Item extends SimpleDb implements ItemInterface
   {
     if (isset($this->id))
     {
-      return $favorite = &UserAccount::getList($pdo, ['index' => [($this::FAVORITE)::TABLE . '__' . $this::TABLE . '_id' => $this->id], 'join' => [($this::FAVORITE)::TABLE . '__' . 'favorite_id' => 'INNER'], 'limit' => $limit, 'offset' => $offset]);
+      return $favorite = &UserAccount::getList($pdo, ['index' => [($this::FAVORITE)::TABLE . '__' . $this::TABLE . '_id' => $this->id], 'join' => [($this::FAVORITE)::TABLE . '__' . 'user_account_id' => 'INNER'], 'limit' => $limit, 'offset' => $offset]);
     }
     else
     {
@@ -49,7 +49,7 @@ class Item extends SimpleDb implements ItemInterface
   {
     if (isset($this->id))
     {
-      return $category = &$this::getList($pdo, ['index' => [($this::CATEGORY)::TABLE . '__' . $this::TABLE . '_id' => $this->id], 'index_not' => ['id' => $this->id], 'distinct' => true, 'filter' => [($this::CATEGORY)::TABLE . '__' . 'category_id' => $category], 'join' => [($this::CATEGORY)::TABLE . '__' . 'category_id' => 'INNER'], 'limit' => $limit, 'offset' => $offset]);
+      return $related = &$this::getList($pdo, ['index_not' => [$this::TABLE . '__' . 'id' => $this->id], 'distinct' => true, 'filter' => [($this::CATEGORY)::TABLE . '__' . 'category_id' => $category], 'join' => [($this::CATEGORY)::TABLE . '__' . $this::TABLE . '_id' => 'INNER'], 'limit' => $limit, 'offset' => $offset]);
     }
     else
     {

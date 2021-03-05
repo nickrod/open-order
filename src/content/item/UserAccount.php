@@ -63,9 +63,10 @@ class UserAccount extends Item
     'enabled' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'created_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
     'updated_date' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => true],
-    'user_account_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'user_account_favorite' . '__' . 'favorite_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'user_account_store' . '__' . 'store_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'user_account' . '__' . 'id' => ['key' => false, 'index' => true, 'index_not' => true, 'allowed' => false, 'order_by' => false],
+    'user_account_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
+    'user_account_favorite' . '__' . 'favorite_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
+    'user_account_store' . '__' . 'store_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
     'user_account_category' . '__' . 'user_account_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
     'user_account_favorite' . '__' . 'user_account_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
     'user_account_store' . '__' . 'user_account_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true]
@@ -470,7 +471,7 @@ class UserAccount extends Item
     }
     else
     {
-      return $return_object->getTotalSalesItem();
+      return $return_object->getTotalUserAccount();
     }
   }
 }

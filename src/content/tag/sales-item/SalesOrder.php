@@ -43,7 +43,6 @@ class SalesOrder extends SimpleDb
   // constants
 
   public const TABLE = 'sales_order_sales_item';
-  public const TABLE_KEY = 'sales_order_id';
 
   //
 
@@ -66,9 +65,7 @@ class SalesOrder extends SimpleDb
     'unit_discount_percent' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'case_discount_quantity' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'unit_discount_quantity' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
-    'created_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
-    'sales_order' . '__' . 'sales_order_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'sales_order' . '__' . 'id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true]
+    'created_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false]
   ];
 
   // constructor

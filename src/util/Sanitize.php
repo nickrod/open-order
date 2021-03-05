@@ -26,6 +26,22 @@ class Sanitize
 
   //
 
+  public static function getDistance(float $lat1, float $lng1, float $lat2, float $lng2, int $radius = 6378137): float
+  {
+    $rad = M_PI / 180;
+    $lat1 *= $rad;
+    $lng1 *= $rad;
+    $lat2 *= $rad;
+    $lng2 *= $rad;
+    $dist = 2 * asin(sqrt(pow(sin(($lat1 - $lat2) / 2), 2) + cos($lat1) * cos($lat2) * pow(sin(($lng1 - $lng2) / 2), 2)));
+
+    //
+
+    return ($dist * $radius);
+  }
+
+  //
+
   public static function getRandomString(int $length = 10): string
   {
     return bin2hex(random_bytes($length));

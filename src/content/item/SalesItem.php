@@ -84,9 +84,10 @@ class SalesItem extends Item
     'instock_date' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'created_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
     'updated_date' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => true],
-    'sales_item_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'sales_item_favorite' . '__' . 'favorite_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'sales_order_sales_item' . '__' . 'sales_order_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'sales_item' . '__' . 'id' => ['key' => false, 'index' => true, 'index_not' => true, 'allowed' => false, 'order_by' => false],
+    'sales_item_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
+    'sales_item_favorite' . '__' . 'favorite_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
+    'sales_order_sales_item' . '__' . 'sales_order_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
     'sales_item_category' . '__' . 'sales_item_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
     'sales_item_favorite' . '__' . 'sales_item_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
     'sales_order_sales_item' . '__' . 'sales_item_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true]

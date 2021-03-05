@@ -54,9 +54,10 @@ class Store extends Item
     'featured' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
     'created_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
     'updated_date' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => true],
-    'store_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'store_favorite' . '__' . 'favorite_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'user_account_store' . '__' . 'user_account_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'store' . '__' . 'id' => ['key' => false, 'index' => true, 'index_not' => true, 'allowed' => false, 'order_by' => false],
+    'store_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
+    'store_favorite' . '__' . 'favorite_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
+    'user_account_store' . '__' . 'user_account_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
     'store_category' . '__' . 'store_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
     'store_favorite' . '__' . 'store_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
     'user_account_store' . '__' . 'store_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true]

@@ -26,6 +26,7 @@ class SalesOrder extends Item
   protected $base_currency_code;
   protected $user_account_name_url;
   protected $store_title_url;
+  protected $base_store_title_url;
   protected $order_id;
   protected $total_weight;
   protected $total_volume;
@@ -39,6 +40,7 @@ class SalesOrder extends Item
   protected $unit_quantity;
   protected $latitude;
   protected $longitude;
+  protected $distance;
   protected $pickup = 0;
   protected $paid = 0;
   protected $enabled = 0;
@@ -53,7 +55,7 @@ class SalesOrder extends Item
   public const TABLE_SEQ = 'sales_order_id_seq';
   public const CATEGORY = 'openorder\content\tag\category\SalesOrder';
   public const FAVORITE = 'openorder\content\tag\favorite\SalesOrder';
-  public const SALES_ITEM = 'openorder\content\tag\sales-item\SalesOrder';
+  public const SALES_ITEM = 'openorder\content\tag\salesitem\SalesOrder';
 
   //
 
@@ -64,28 +66,31 @@ class SalesOrder extends Item
     'base_currency_code' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'user_account_name_url' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
     'store_title_url' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
+    'base_store_title_url' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
     'order_id' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
-    'total_weight' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
-    'total_volume' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
+    'total_weight' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
+    'total_volume' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
     'currency_price' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'shipping_price' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'tax_price' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'subtotal_price' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'discount_price' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
-    'total_price' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
+    'total_price' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => true],
     'case_quantity' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'unit_quantity' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'latitude' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'longitude' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
+    'distance' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
     'pickup' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'paid' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'enabled' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => false],
     'deliver_date' => ['key' => false, 'index' => false, 'allowed' => true, 'order_by' => false],
     'created_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
     'updated_date' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => true],
-    'sales_order_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'sales_order_favorite' . '__' . 'favorite_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'sales_order_sales_item' . '__' . 'sales_item_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'sales_order' . '__' . 'id' => ['key' => false, 'index' => true, 'index_not' => true, 'allowed' => false, 'order_by' => false],
+    'sales_order_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
+    'sales_order_favorite' . '__' . 'favorite_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
+    'sales_order_sales_item' . '__' . 'sales_item_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
     'sales_order_category' . '__' . 'sales_order_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
     'sales_order_favorite' . '__' . 'sales_order_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
     'sales_order_sales_item' . '__' . 'sales_order_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true]
@@ -133,6 +138,13 @@ class SalesOrder extends Item
     if (isset($column['store_title_url']))
     {
       $this->setStoreTitleUrl($column['store_title_url']);
+    }
+
+    //
+
+    if (isset($column['base_store_title_url']))
+    {
+      $this->setBaseStoreTitleUrl($column['base_store_title_url']);
     }
 
     //
@@ -214,6 +226,13 @@ class SalesOrder extends Item
 
     //
 
+    if (isset($column['distance']))
+    {
+      $this->setDistance($column['distance']);
+    }
+
+    //
+
     if (isset($column['pickup']))
     {
       $this->setPickup($column['pickup']);
@@ -281,6 +300,13 @@ class SalesOrder extends Item
   public function getStoreTitleUrl(): string 
   {
     return Sanitize::noHTML(urlencode($this->store_title_url));
+  }
+
+  //
+
+  public function getBaseStoreTitleUrl(): string 
+  {
+    return Sanitize::noHTML(urlencode($this->base_store_title_url));
   }
 
   //
@@ -372,6 +398,13 @@ class SalesOrder extends Item
   public function getLongitude(): ?float 
   {
     return $this->longitude;
+  }
+
+  //
+
+  public function getDistance(): ?float 
+  {
+    return $this->distance;
   }
 
   //
@@ -492,6 +525,16 @@ class SalesOrder extends Item
 
   //
 
+  public function setBaseStoreTitleUrl(string $base_store_title_url): void 
+  {
+    if (Validate::strLength($base_store_title_url, 1, 70))
+    {
+      $this->base_store_title_url = $base_store_title_url;
+    }
+  }
+
+  //
+
   public function setOrderId(?int $order_id): void 
   {
     if (is_null($order_id) || Validate::intLength($order_id, 1))
@@ -594,6 +637,16 @@ class SalesOrder extends Item
 
   //
 
+  public function setDistance(?float $distance): void 
+  {
+    if (is_null($distance) || Validate::intLength(Sanitize::setFloat($distance), 1))
+    {
+      $this->distance = $distance;
+    }
+  }
+
+  //
+
   public function setPickup(bool $pickup): void 
   {
     $this->pickup = Sanitize::setBoolean($pickup);
@@ -685,33 +738,33 @@ class SalesOrder extends Item
 
             //
 
-            (new $sales_order([self::TABLE . '_id' => $this->id, 'sales_item_id' => $sales_item_id, 'case_volume' => $case_volume, 'unit_volume' => $unit_volume, 'case_weight' => $case_weight, 'unit_weight' => $unit_weight, 'case_price' => $case_price, 'unit_price' => $unit_price, 'case_cost_price' => $item_object->getCaseCostPrice(), 'unit_cost_price' => $item_object->getUnitCostPrice(), 'case_quantity' => $case_quantity, 'unit_quantity' => $unit_quantity, 'case_discount_price' => $case_discount_price, 'unit_discount_price' => $unit_discount_price, 'case_discount_percent' => $item_object->getCaseDiscountPercent(), 'unit_discount_percent' => $item_object->getUnitDiscountPercent(), 'case_discount_quantity' => $item_object->getCaseDiscountQuantity(), 'unit_discount_quantity' => $item_object->getUnitDiscountQuantity()]))->save($pdo);
+            (new $sales_order([self::TABLE . '_id' => $this->id, 'sales_item_id' => $item_object->getId(), 'case_volume' => $case_volume, 'unit_volume' => $unit_volume, 'case_weight' => $case_weight, 'unit_weight' => $unit_weight, 'case_price' => $case_price, 'unit_price' => $unit_price, 'case_cost_price' => $item_object->getCaseCostPrice(), 'unit_cost_price' => $item_object->getUnitCostPrice(), 'case_quantity' => $case_quantity, 'unit_quantity' => $unit_quantity, 'case_discount_price' => $case_discount_price, 'unit_discount_price' => $unit_discount_price, 'case_discount_percent' => $item_object->getCaseDiscountPercent(), 'unit_discount_percent' => $item_object->getUnitDiscountPercent(), 'case_discount_quantity' => $item_object->getCaseDiscountQuantity(), 'unit_discount_quantity' => $item_object->getUnitDiscountQuantity()]))->save($pdo);
           }
           else
           {
             throw new \InvalidArgumentException('Sales item id does not exist: ' . $sales_item_id);
           }
         }
+      }
 
-        //
+      //
 
-        if ($total_case_quantity !== null || $total_unit_quantity !== null)
-        {
-          $this->setCaseQuantity((($this->getCaseQuantity() + $total_case_quantity) > 0) ? ($this->getCaseQuantity() + $total_case_quantity) : null);
-          $this->setUnitQuantity((($this->getUnitQuantity() + $total_unit_quantity) > 0) ? ($this->getUnitQuantity() + $total_unit_quantity) : null);
-          $this->setTotalVolume((($this->getTotalVolume() + $total_volume) > 0) ? ($this->getTotalVolume() + $total_volume) : null);
-          $this->setTotalWeight((($this->getTotalWeight() + $total_weight) > 0) ? ($this->getTotalWeight() + $total_weight) : null);
-          $this->setSubtotalPrice((($this->getSubtotalPrice() + $subtotal_price) > 0) ? ($this->getSubtotalPrice() + $subtotal_price) : null);
-          $this->setDiscountPrice((($this->getDiscountPrice() + $discount_price) > 0) ? ($this->getDiscountPrice() + $discount_price) : null);
-          $this->edit($pdo);
-        }
+      if ($total_case_quantity !== null || $total_unit_quantity !== null)
+      {
+        $this->setCaseQuantity((($this->getCaseQuantity() + $total_case_quantity) > 0) ? ($this->getCaseQuantity() + $total_case_quantity) : null);
+        $this->setUnitQuantity((($this->getUnitQuantity() + $total_unit_quantity) > 0) ? ($this->getUnitQuantity() + $total_unit_quantity) : null);
+        $this->setTotalVolume((($this->getTotalVolume() + $total_volume) > 0) ? ($this->getTotalVolume() + $total_volume) : null);
+        $this->setTotalWeight((($this->getTotalWeight() + $total_weight) > 0) ? ($this->getTotalWeight() + $total_weight) : null);
+        $this->setSubtotalPrice((($this->getSubtotalPrice() + $subtotal_price) > 0) ? ($this->getSubtotalPrice() + $subtotal_price) : null);
+        $this->setDiscountPrice((($this->getDiscountPrice() + $discount_price) > 0) ? ($this->getDiscountPrice() + $discount_price) : null);
+        $this->edit($pdo);
       }
     }
   }
 
   //
 
-  public function removeSalesItem(array $sales_item = []): void
+  public function removeSalesItem(\PDO $pdo, array $sales_item = []): void
   {
     if (isset($this->id))
     {

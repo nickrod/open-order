@@ -46,8 +46,9 @@ class StoreAccount extends Item
     'featured' => ['key' => false, 'index' => true, 'allowed' => true, 'order_by' => true],
     'created_date' => ['key' => false, 'index' => false, 'allowed' => false, 'order_by' => false],
     'updated_date' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => true],
-    'store_account_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
-    'store_account_favorite' . '__' . 'favorite_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false],
+    'store_account' . '__' . 'id' => ['key' => false, 'index' => true, 'index_not' => true, 'allowed' => false, 'order_by' => false],
+    'store_account_category' . '__' . 'category_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
+    'store_account_favorite' . '__' . 'favorite_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'filter' => true],
     'store_account_category' . '__' . 'store_account_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true],
     'store_account_favorite' . '__' . 'store_account_id' => ['key' => false, 'index' => true, 'allowed' => false, 'order_by' => false, 'join' => true]
   ];
